@@ -216,38 +216,48 @@ function UnitSettings({
   function update(patch: Partial<Unit>) {
     return setPlan({
       ...plan,
-      units: plan.units.map((u, n) => (index === n ? { ...u, ...patch } : u)),
+      units: plan.units.map((u, i) => (index === i ? { ...u, ...patch } : u)),
+    });
+  }
+
+  function del() {
+    return setPlan({
+      ...plan,
+      units: plan.units.filter((_, i) => i !== index),
     });
   }
 
   return (
-    <table className="UnitSettings">
-      <tbody>
-        <TextInput
-          label="Label"
-          value={unit.label}
-          onChange={(label) => update({ label })}
-        />
-        <TextInput
-          label="Type"
-          value={unit.type}
-          onChange={(type) => update({ type })}
-        />
-        <EnumInput
-          label="Colour"
-          value={unit.colour}
-          empty="(default)"
-          options={Colours}
-          onChange={(colour) => update({ colour })}
-        />
-        <EnumInput
-          label="Size"
-          value={unit.size}
-          options={Sizes}
-          onChange={(size) => update({ size })}
-        />
-      </tbody>
-    </table>
+    <div className="UnitSettings">
+      <button onClick={del}>Delete</button>
+      <table>
+        <tbody>
+          <TextInput
+            label="Label"
+            value={unit.label}
+            onChange={(label) => update({ label })}
+          />
+          <TextInput
+            label="Type"
+            value={unit.type}
+            onChange={(type) => update({ type })}
+          />
+          <EnumInput
+            label="Colour"
+            value={unit.colour}
+            empty="(default)"
+            options={Colours}
+            onChange={(colour) => update({ colour })}
+          />
+          <EnumInput
+            label="Size"
+            value={unit.size}
+            options={Sizes}
+            onChange={(size) => update({ size })}
+          />
+        </tbody>
+      </table>
+    </div>
   );
 }
 

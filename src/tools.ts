@@ -4,18 +4,43 @@ export function en(count: number) {
   return [...Array(count).keys()];
 }
 
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 export function columnLabel(n: number) {
   var label = "";
   while (n || !label) {
-    label += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[n % 26];
+    label += alphabet[n % 26];
     n = Math.floor(n / 26);
   }
 
   return label;
 }
 
+function parseColumnLabel(l: string) {
+  var total = 0;
+  for (var i = 0; i < l.length; i++) {
+    const ch = l[i];
+    const worth = alphabet.indexOf(ch);
+    total = total * 26 + worth;
+  }
+
+  return total;
+}
+
 export function cellLabel(x: number, y: number) {
   return columnLabel(x) + (y + 1);
+}
+
+function parseCellLabel(l: string) {
+  for (var i = 0; i < l.length; i++) {
+    if ("0123456789".indexOf(l[i]) !== -1) {
+      const col = l.substr(0, i).toUpperCase();
+      const row = l.substr(i);
+
+      return { x: parseColumnLabel(col), y: parseInt(row, 10) };
+    }
+  }
+
+  return { x: 0, y: 0 };
 }
 
 export function unitAt(plan: BattlePlan, x: number, y: number) {
@@ -39,24 +64,131 @@ function getMAdd(u: Unit) {
 }
 
 export function convertToBPlan(plan: BattlePlan) {
+  const mapArgs = [`-mapsize ${plan.width}x${plan.height}`];
+  if (plan.bg) mapArgs.push(`-bg ${plan.bg}`);
+
   const cmds: string[] = [];
   const id = q(plan.name);
-  cmds.push(
-    `!bplan new ${id}`,
-    `!bplan map ${id} set -mapsize ${plan.width}x${plan.height}`
-  );
+  cmds.push(`!bplan new ${id}`, `!bplan map ${id} set ${mapArgs.join(" ")}`);
   cmds.push(...plan.units.map((u) => `!bplan add ${id} ${getMAdd(u)}`));
 
   return cmds;
 }
 
 export function convertToUvar(plan: BattlePlan) {
+  const mapArgs = [`Size: ${plan.width}x${plan.height}`];
+  if (plan.bg) mapArgs.push(`Background: ${plan.bg}`);
+
   const cmds: string[] = [];
   cmds.push(
     "!i add 100 DM -p",
-    `!i effect DM map -attack "||Size: ${plan.width}x${plan.height}"`
+    `!i effect DM map -attack "||${mapArgs.join(" ~ ")}"`
   );
   cmds.push(...plan.units.map(getMAdd));
 
   return "!uvar Battles " + JSON.stringify({ [plan.name]: cmds });
+}
+
+function splitCommand(line: string) {
+  var command = "";
+  var args: string[] = [];
+  const switches: { [key: string]: string } = {};
+  var qmode = false;
+  var smode = "";
+  var current = "";
+
+  function parseWord() {
+    if (!command) command = current;
+    else if (current[0] === "-") smode = current;
+    else if (smode) {
+      switches[smode.substr(1)] = current;
+      smode = "";
+    } else args.push(current);
+    current = "";
+  }
+
+  for (var i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (qmode) {
+      if (ch === '"') qmode = false;
+      else current += ch;
+    } else {
+      if (ch === '"') {
+        qmode = true;
+      } else if (ch === " ") {
+        parseWord();
+      } else {
+        current += ch;
+      }
+    }
+  }
+  if (current) parseWord();
+
+  return { command, args, switches };
+}
+
+function around(s: string, mid: string) {
+  const i = s.indexOf(mid);
+  const key = s.substr(0, i);
+  const val = s.substr(i + mid.length);
+
+  return [key, val];
+}
+
+export function convertFromUVar(s: string) {
+  const val: { [key: string]: string[] } = JSON.parse(s);
+  const name = Object.keys(val)[0];
+  const plan: BattlePlan = { name, width: 1, height: 1, units: [] };
+  val[name].forEach((line) => {
+    const { command, args, switches } = splitCommand(line);
+    if (!["!i", "!init"].includes(command)) return;
+
+    switch (args[0]) {
+      case "effect":
+        switches.attack
+          .substr(2)
+          .split(" ~ ")
+          .forEach((arg) => {
+            const [key, val] = around(arg, ": ");
+
+            if (key === "Size") {
+              const [width, height] = around(val, "x");
+              plan.width = parseInt(width, 10);
+              plan.height = parseInt(height, 10);
+            } else if (key === "Background") {
+              plan.bg = val;
+            }
+          });
+        break;
+
+      case "madd":
+        const type = args[1];
+        const label = switches.name;
+        var location = "";
+        var colour = undefined;
+        var size = "M";
+        switches.note.split(" | ").forEach((arg) => {
+          const [key, val] = around(arg, ": ");
+
+          if (key === "Location") {
+            location = val;
+          } else if (key === "Color") {
+            colour = val;
+          } else if (key === "Size") {
+            size = val;
+          }
+        });
+
+        plan.units.push({
+          type,
+          label,
+          colour,
+          size,
+          ...parseCellLabel(location),
+        });
+    }
+  });
+
+  return plan;
 }

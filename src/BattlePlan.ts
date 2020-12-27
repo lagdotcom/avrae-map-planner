@@ -32,4 +32,5 @@ export default interface BattlePlan {
   width: number;
   height: number;
   units: Unit[];
+  bg?: string;
 }

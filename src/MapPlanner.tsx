@@ -8,7 +8,15 @@ import BattlePlan, {
   Unit,
 } from "./BattlePlan";
 import "./MapPlanner.scss";
-import { unitAt, cellLabel, en, columnLabel, convertToUvar } from "./tools";
+import {
+  unitAt,
+  cellLabel,
+  en,
+  columnLabel,
+  convertToUvar,
+  convertToBPlan,
+  convertFromUVar,
+} from "./tools";
 
 type coord = [x: number, y: number];
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
@@ -53,7 +61,10 @@ function MapView({
   plan: BattlePlan;
 }) {
   return (
-    <table className="MapView">
+    <table
+      className="MapView"
+      style={plan.bg ? { backgroundImage: `url(${plan.bg})` } : {}}
+    >
       <tbody>
         <tr className="top-row">
           <th className="x">x</th>
@@ -181,6 +192,11 @@ function MapSettings({
           value={plan.height}
           onChange={(height) => setPlan({ ...plan, height: height || 1 })}
         />
+        <TextInput
+          label="BG"
+          value={plan.bg || ""}
+          onChange={(bg) => setPlan({ ...plan, bg })}
+        />
       </tbody>
     </table>
   );
@@ -254,10 +270,24 @@ function MapDetails({
   );
 }
 
-function MapCode({ plan }: { plan: BattlePlan }) {
-  const lines = convertToUvar(plan);
+function MapCode({
+  onChange,
+  plan,
+  uvar,
+}: {
+  onChange: (s: string) => void;
+  plan: BattlePlan;
+  uvar: boolean;
+}) {
+  const lines = uvar ? convertToUvar(plan) : convertToBPlan(plan).join("\n");
 
-  return <div className="MapCode">{lines}</div>;
+  return (
+    <textarea
+      className="MapCode"
+      value={lines}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
 }
 
 export default function MapPlanner() {
@@ -291,11 +321,15 @@ export default function MapPlanner() {
     setSelection([x, y]);
   }
 
+  function parse(s: string) {
+    setPlan(convertFromUVar(s));
+  }
+
   return (
     <div className="MapPlanner">
       <MapView onClick={select} plan={plan} />
       <MapDetails plan={plan} setPlan={setPlan} selection={selection} />
-      <MapCode plan={plan} />
+      <MapCode onChange={parse} plan={plan} uvar={true} />
     </div>
   );
 }

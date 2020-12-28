@@ -10,12 +10,13 @@ import BattlePlan, {
 import "./MapPlanner.scss";
 import {
   unitAt,
-  cellLabel,
+  cell,
   en,
   columnLabel,
   convertToUvar,
   convertToBPlan,
   convertFromUVar,
+  getOTFBMUrl,
 } from "./tools";
 
 type coord = [x: number, y: number];
@@ -37,7 +38,9 @@ function MapTile({
 
   return (
     <td className="cell" onClick={() => onClick(x, y)}>
-      <span className="label">{cellLabel(x, y)}</span>
+      <span className="label">
+        {cell(plan.startx || 0 + x, plan.starty || 0 + y)}
+      </span>
       {unit && (
         <span
           className={classnames("Unit", "size-" + unit.size)}
@@ -274,6 +277,7 @@ function MapDetails({
 
   return (
     <div className="MapDetails">
+      <button onClick={() => window.open(getOTFBMUrl(plan))}>Test</button>
       <MapSettings plan={plan} setPlan={setPlan} />
       {unit && <UnitSettings plan={plan} setPlan={setPlan} unit={unit} />}
     </div>
@@ -306,6 +310,7 @@ export default function MapPlanner() {
     width: 5,
     height: 5,
     units: [],
+    walls: [],
   });
 
   const [selection, setSelection] = useState<coord>();
@@ -321,9 +326,10 @@ export default function MapPlanner() {
           {
             x,
             y,
-            size: "M",
+            size: current?.size || "M",
             label: current?.label || "",
             type: current?.type || "",
+            colour: current?.colour,
           },
         ],
       });
@@ -332,7 +338,8 @@ export default function MapPlanner() {
   }
 
   function parse(s: string) {
-    setPlan(convertFromUVar(s));
+    const stripped = s.startsWith("!uvar Battles ") ? s.substr(14) : s;
+    setPlan(convertFromUVar(stripped));
   }
 
   return (

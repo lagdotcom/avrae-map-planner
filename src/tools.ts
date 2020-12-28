@@ -26,7 +26,7 @@ function parseColumnLabel(l: string) {
   return total;
 }
 
-export function cellLabel(x: number, y: number) {
+export function cell(x: number, y: number) {
   return columnLabel(x) + (y + 1);
 }
 
@@ -36,7 +36,7 @@ function parseCellLabel(l: string) {
       const col = l.substr(0, i).toUpperCase();
       const row = l.substr(i);
 
-      return { x: parseColumnLabel(col), y: parseInt(row, 10) };
+      return { x: parseColumnLabel(col), y: parseInt(row, 10) - 1 };
     }
   }
 
@@ -54,7 +54,7 @@ function q(s: string) {
 
 function getMAdd(u: Unit) {
   const parts = [`!i madd ${q(u.type)}`];
-  const notes = [`Location: ${cellLabel(u.x, u.y)}`];
+  const notes = [`Location: ${cell(u.x, u.y)}`];
   if (u.label) parts.push(`-name ${q(u.label)}`);
   if (u.colour) notes.push(`Color: ${u.colour}`);
   if (u.size !== "M") notes.push(`Size: ${u.size}`);
@@ -139,7 +139,7 @@ function around(s: string, mid: string) {
 export function convertFromUVar(s: string) {
   const val: { [key: string]: string[] } = JSON.parse(s);
   const name = Object.keys(val)[0];
-  const plan: BattlePlan = { name, width: 1, height: 1, units: [] };
+  const plan: BattlePlan = { name, width: 1, height: 1, units: [], walls: [] };
   val[name].forEach((line) => {
     const { command, args, switches } = splitCommand(line);
     if (!["!i", "!init"].includes(command)) return;
@@ -191,4 +191,39 @@ export function convertFromUVar(s: string) {
   });
 
   return plan;
+}
+
+export function getOTFBMUrl(plan: BattlePlan) {
+  var url = "https://otfbm.io/";
+
+  if (plan.startx || plan.starty)
+    url += cell(plan.startx || 0, plan.starty || 0) + ":";
+  url += `${plan.width}x${plan.height}`;
+  if (plan.gridsize) url += `/@c${plan.gridsize}`;
+  if (plan.bgx || plan.bgy) url += `/@o${plan.bgx || 0}:${plan.bgy || 0}`;
+
+  if (plan.walls.length) {
+    url += "/";
+    plan.walls.forEach((w) => {
+      url += "_";
+      if (w.colour) url += "-c" + w.colour;
+      url += cell(w.sx, w.sy);
+      if (w.door) url += "-" + w.door;
+      url += cell(w.ex, w.ey);
+    });
+  }
+
+  plan.units.forEach((u) => {
+    url += "/" + cell(u.x, u.y);
+    if (u.size !== "M") url += u.size;
+    url += u.colour || "r";
+    if (u.label) url += "-" + u.label;
+    if (u.token) {
+      url += "~" + u.token;
+      if (u.noface) url += "~";
+    }
+  });
+
+  if (plan.bg) url += "?bg=" + plan.bg;
+  return url;
 }

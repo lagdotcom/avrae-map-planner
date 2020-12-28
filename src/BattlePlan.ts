@@ -25,6 +25,26 @@ export interface Unit {
   y: number;
   colour?: ColourName;
   size: string;
+  token?: string;
+  noface?: boolean;
+}
+
+export const DoorTypes = {
+  o: "open",
+  c: "closed",
+  b: "double",
+  s: "secret",
+};
+type DoorType = keyof typeof DoorTypes;
+export const Doors = Object.keys(DoorTypes) as DoorType[];
+
+export interface Wall {
+  sx: number;
+  sy: number;
+  ex: number;
+  ey: number;
+  colour?: ColourName;
+  door?: DoorType;
 }
 
 export default interface BattlePlan {
@@ -33,4 +53,10 @@ export default interface BattlePlan {
   height: number;
   units: Unit[];
   bg?: string;
+  bgx?: number;
+  bgy?: number;
+  startx?: number;
+  starty?: number;
+  gridsize?: number;
+  walls: Wall[];
 }

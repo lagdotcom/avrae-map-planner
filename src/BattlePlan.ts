@@ -2,19 +2,19 @@ export const ColourValues = {
   w: "white",
   k: "black",
   e: "grey",
-  r: "red",
-  g: "green",
-  b: "blue",
-  y: "yellow",
-  p: "purple",
-  c: "cyan",
-  n: "brown",
-  o: "orange",
-  pk: "pink",
+  r: "#f33",
+  g: "#3c6",
+  b: "#37b",
+  y: "#fd8",
+  p: "#c6a",
+  c: "skyblue",
+  n: "#422",
+  o: "#f80",
+  pk: "#fce",
 };
 type ColourName = keyof typeof ColourValues;
 export const Colours = Object.keys(ColourValues) as ColourName[];
-export const LightColours = ["w", "y", "c", "pk"] as ColourName[];
+export const LightColours = ["w", "g", "y", "c", "o", "pk"] as ColourName[];
 
 export const Sizes = ["T", "S", "M", "L", "H", "G"];
 

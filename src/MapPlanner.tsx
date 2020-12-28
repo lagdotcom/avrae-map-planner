@@ -1,4 +1,3 @@
-import classnames from "classnames";
 import { useState } from "react";
 import BattlePlan, {
   Colours,
@@ -10,7 +9,6 @@ import BattlePlan, {
 import "./MapPlanner.scss";
 import {
   unitAt,
-  cell,
   en,
   columnLabel,
   convertToUvar,
@@ -22,37 +20,62 @@ import {
 type coord = [x: number, y: number];
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
 
-function MapTile({
+const sizeLookup: { [size: string]: number } = {
+  T: 0.3,
+  S: 0.45,
+  M: 0.5,
+  L: 1,
+  H: 1.5,
+  G: 2,
+};
+function MapUnit({
   onClick,
   plan,
-  x,
-  y,
+  unit: u,
 }: {
   onClick: (x: number, y: number) => void;
   plan: BattlePlan;
-  x: number;
-  y: number;
+  unit: Unit;
 }) {
-  const unit = unitAt(plan, x, y);
-  const colour = unit?.colour || "r";
+  const size = plan.gridsize || 40;
+  const colour = u.colour || "r";
+  const scale = sizeLookup[u.size];
+  const ssize = scale * size;
+  const x = (u.x + Math.max(scale, 0.5)) * size;
+  const y = (u.y + Math.max(scale, 0.5)) * size;
 
   return (
-    <td className="cell" onClick={() => onClick(x, y)}>
-      <span className="label">
-        {cell(plan.startx || 0 + x, plan.starty || 0 + y)}
-      </span>
-      {unit && (
-        <span
-          className={classnames("Unit", "size-" + unit.size)}
-          style={{
-            backgroundColor: ColourValues[colour],
-            color: LightColours.includes(colour) ? "black" : "white",
-          }}
-        >
-          {unit.label || " "}
-        </span>
+    <g onClick={() => onClick(u.x, u.y)}>
+      <circle
+        cx={x}
+        cy={y}
+        r={ssize - 2}
+        stroke="black"
+        fill={ColourValues[colour]}
+        pointerEvents="none"
+      />
+      {colour !== "w" && (
+        <circle
+          cx={x}
+          cy={y}
+          r={ssize - 3}
+          stroke="white"
+          fill="transparent"
+          pointerEvents="none"
+        />
       )}
-    </td>
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill={LightColours.includes(colour) ? "black" : "white"}
+        fontSize={ssize * 0.6}
+        pointerEvents="none"
+      >
+        {u.label}
+      </text>
+    </g>
   );
 }
 
@@ -63,30 +86,67 @@ function MapView({
   onClick: (x: number, y: number) => void;
   plan: BattlePlan;
 }) {
+  const size = plan.gridsize || 40;
+  const sx = plan.width * size;
+  const sy = plan.height * size;
+  const padx = (plan.width + 2) * size;
+  const pady = (plan.height + 2) * size;
+
   return (
-    <table
+    <svg
       className="MapView"
-      style={plan.bg ? { backgroundImage: `url(${plan.bg})` } : {}}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={`${-size} ${-size} ${padx} ${pady}`}
     >
-      <tbody>
-        <tr className="top-row">
-          <th className="x">x</th>
-          {en(plan.width).map((x) => (
-            <th key={x} className="col-label">
-              {columnLabel(x)}
-            </th>
-          ))}
-        </tr>
-        {en(plan.height).map((y) => (
-          <tr key={y} className="row">
-            <th className="row-label">{y + 1}</th>
-            {en(plan.width).map((x) => (
-              <MapTile key={x} onClick={onClick} plan={plan} x={x} y={y} />
-            ))}
-          </tr>
+      <g>
+        {en(plan.width).map((x) => (
+          <text
+            x={size * (x + 0.5)}
+            y="-20"
+            textAnchor="middle"
+            dominantBaseline="central"
+          >
+            {columnLabel(x)}
+          </text>
         ))}
-      </tbody>
-    </table>
+        {en(plan.height).map((y) => (
+          <text
+            x="-20"
+            y={size * (y + 0.5)}
+            textAnchor="middle"
+            dominantBaseline="central"
+          >
+            {y + 1}
+          </text>
+        ))}
+      </g>
+      <g stroke="grey" fill="white">
+        {en(plan.width).map((x) =>
+          en(plan.height).map((y) => (
+            <rect
+              x={size * x}
+              y={size * y}
+              width={size}
+              height={size}
+              onClick={() => onClick(x, y)}
+            />
+          ))
+        )}
+      </g>
+      <rect
+        x="0"
+        y="0"
+        width={sx}
+        height={sy}
+        stroke="black"
+        strokeWidth="2"
+        fill="transparent"
+        pointerEvents="none"
+      />
+      {plan.units.map((u) => (
+        <MapUnit onClick={onClick} plan={plan} unit={u} />
+      ))}
+    </svg>
   );
 }
 

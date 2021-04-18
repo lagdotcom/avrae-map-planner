@@ -1,4 +1,7 @@
+import "./MapPlanner.scss";
+
 import { useState } from "react";
+
 import BattlePlan, {
   Colours,
   ColourValues,
@@ -6,18 +9,17 @@ import BattlePlan, {
   Sizes,
   Unit,
 } from "./BattlePlan";
-import "./MapPlanner.scss";
 import {
-  unitAt,
-  en,
   columnLabel,
-  convertToUvar,
-  convertToBPlan,
   convertFromUVar,
+  convertToBPlan,
+  convertToUvar,
+  en,
   getOTFBMUrl,
+  unitAt,
 } from "./tools";
 
-type coord = [x: number, y: number];
+type XY = [x: number, y: number];
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
 
 const sizeLookup: { [size: string]: number } = {
@@ -101,6 +103,7 @@ function MapView({
       <g>
         {en(plan.width).map((x) => (
           <text
+            key={"col" + x}
             x={size * (x + 0.5)}
             y="-20"
             textAnchor="middle"
@@ -111,6 +114,7 @@ function MapView({
         ))}
         {en(plan.height).map((y) => (
           <text
+            key={"row" + y}
             x="-20"
             y={size * (y + 0.5)}
             textAnchor="middle"
@@ -124,6 +128,7 @@ function MapView({
         {en(plan.width).map((x) =>
           en(plan.height).map((y) => (
             <rect
+              key={`${x},${y}`}
               x={size * x}
               y={size * y}
               width={size}
@@ -143,8 +148,8 @@ function MapView({
         fill="transparent"
         pointerEvents="none"
       />
-      {plan.units.map((u) => (
-        <MapUnit onClick={onClick} plan={plan} unit={u} />
+      {plan.units.map((u, i) => (
+        <MapUnit key={"u" + i} onClick={onClick} plan={plan} unit={u} />
       ))}
     </svg>
   );
@@ -330,7 +335,7 @@ function MapDetails({
   setPlan,
 }: {
   plan: BattlePlan;
-  selection?: coord;
+  selection?: XY;
   setPlan: BattlePlanUpdater;
 }) {
   const unit = selection && unitAt(plan, ...selection);
@@ -373,7 +378,7 @@ export default function MapPlanner() {
     walls: [],
   });
 
-  const [selection, setSelection] = useState<coord>();
+  const [selection, setSelection] = useState<XY>();
   function select(x: number, y: number) {
     const current = selection && unitAt(plan, ...selection);
 

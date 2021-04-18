@@ -1,0 +1,11 @@
+{
+  "importStringConfiguration": {
+    "quoteMark": "double",
+    "trailingComma": "multiLine",
+    "tabSize": 2,
+    "maximumNumberOfImportExpressionsPerLine": {
+      "count": 80,
+      "type": "newLineEachExpressionAfterCountLimit"
+    }
+  }
+}

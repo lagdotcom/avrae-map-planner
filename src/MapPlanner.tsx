@@ -141,7 +141,7 @@ function UnitSettings({
 
   return (
     <div className="UnitSettings">
-      <button onClick={del}>Delete</button>
+      <strong>Unit</strong> <button onClick={del}>Delete</button>
       <table>
         <tbody>
           <TableNumberInput

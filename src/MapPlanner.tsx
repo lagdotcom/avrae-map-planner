@@ -1,6 +1,6 @@
 import "./MapPlanner.scss";
 
-import { useState } from "react";
+import React, { useState } from "react";
 
 import BattlePlan, {
   Colours,
@@ -369,7 +369,7 @@ function MapCode({
   );
 }
 
-export default function MapPlanner() {
+export default function MapPlanner(): JSX.Element {
   const [plan, setPlan] = useState<BattlePlan>({
     name: "name",
     width: 5,

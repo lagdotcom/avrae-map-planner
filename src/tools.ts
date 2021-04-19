@@ -1,12 +1,12 @@
 import BattlePlan, { Unit } from "./BattlePlan";
 
-export function en(count: number) {
-  return [...Array(count).keys()];
+export function en(count: number): number[] {
+  return Array.from(Array(count).keys());
 }
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-export function columnLabel(n: number) {
-  var label = "";
+export function columnLabel(n: number): string {
+  let label = "";
   while (n || !label) {
     label += alphabet[n % 26];
     n = Math.floor(n / 26);
@@ -16,8 +16,8 @@ export function columnLabel(n: number) {
 }
 
 function parseColumnLabel(l: string) {
-  var total = 0;
-  for (var i = 0; i < l.length; i++) {
+  let total = 0;
+  for (let i = 0; i < l.length; i++) {
     const ch = l[i];
     const worth = alphabet.indexOf(ch);
     total = total * 26 + worth;
@@ -26,12 +26,12 @@ function parseColumnLabel(l: string) {
   return total;
 }
 
-export function cell(x: number, y: number) {
+export function cell(x: number, y: number): string {
   return columnLabel(x) + (y + 1);
 }
 
 function parseCellLabel(l: string) {
-  for (var i = 0; i < l.length; i++) {
+  for (let i = 0; i < l.length; i++) {
     if ("0123456789".indexOf(l[i]) !== -1) {
       const col = l.substr(0, i).toUpperCase();
       const row = l.substr(i);
@@ -43,7 +43,11 @@ function parseCellLabel(l: string) {
   return { x: 0, y: 0 };
 }
 
-export function unitAt(plan: BattlePlan, x: number, y: number) {
+export function unitAt(
+  plan: BattlePlan,
+  x: number,
+  y: number
+): Unit | undefined {
   return plan.units.find((u) => u.x === x && u.y === y);
 }
 
@@ -63,19 +67,19 @@ function getMAdd(u: Unit) {
   return parts.join(" ");
 }
 
-export function convertToBPlan(plan: BattlePlan) {
+export function convertToBPlan(plan: BattlePlan): string[] {
   const mapArgs = [`-mapsize ${plan.width}x${plan.height}`];
   if (plan.bg) mapArgs.push(`-bg ${plan.bg}`);
 
-  const cmds: string[] = [];
   const id = q(plan.name);
-  cmds.push(`!bplan new ${id}`, `!bplan map ${id} set ${mapArgs.join(" ")}`);
-  cmds.push(...plan.units.map((u) => `!bplan add ${id} ${getMAdd(u)}`));
-
-  return cmds;
+  return [
+    `!bplan new ${id}`,
+    `!bplan map ${id} set ${mapArgs.join(" ")}`,
+    ...plan.units.map((u) => `!bplan add ${id} ${getMAdd(u)}`),
+  ];
 }
 
-export function convertToUvar(plan: BattlePlan) {
+export function convertToUvar(plan: BattlePlan): string {
   const mapArgs = [`Size: ${plan.width}x${plan.height}`];
   if (plan.bg) mapArgs.push(`Background: ${plan.bg}`);
 
@@ -90,12 +94,12 @@ export function convertToUvar(plan: BattlePlan) {
 }
 
 function splitCommand(line: string) {
-  var command = "";
-  var args: string[] = [];
-  const switches: { [key: string]: string } = {};
-  var qmode = false;
-  var smode = "";
-  var current = "";
+  let command = "";
+  const args: string[] = [];
+  const switches: Record<string, string> = {};
+  let qmode = false;
+  let smode = "";
+  let current = "";
 
   function parseWord() {
     if (!command) command = current;
@@ -107,7 +111,7 @@ function splitCommand(line: string) {
     current = "";
   }
 
-  for (var i = 0; i < line.length; i++) {
+  for (let i = 0; i < line.length; i++) {
     const ch = line[i];
 
     if (qmode) {
@@ -136,7 +140,55 @@ function around(s: string, mid: string) {
   return [key, val];
 }
 
-export function convertFromUVar(s: string) {
+function applyEffectCmd(plan: BattlePlan, switches: Record<string, string>) {
+  switches.attack
+    .substr(2)
+    .split(" ~ ")
+    .forEach((arg) => {
+      const [key, val] = around(arg, ": ");
+
+      if (key === "Size") {
+        const [width, height] = around(val, "x");
+        plan.width = parseInt(width, 10);
+        plan.height = parseInt(height, 10);
+      } else if (key === "Background") {
+        plan.bg = val;
+      }
+    });
+}
+
+function applyMAddCommand(
+  plan: BattlePlan,
+  args: string[],
+  switches: Record<string, string>
+) {
+  const type = args[1];
+  const label = switches.name;
+  let location = "";
+  let colour = undefined;
+  let size = "M";
+  switches.note.split(" | ").forEach((arg) => {
+    const [key, val] = around(arg, ": ");
+
+    if (key === "Location") {
+      location = val;
+    } else if (key === "Color") {
+      colour = val;
+    } else if (key === "Size") {
+      size = val;
+    }
+  });
+
+  plan.units.push({
+    type,
+    label,
+    colour,
+    size,
+    ...parseCellLabel(location),
+  });
+}
+
+export function convertFromUVar(s: string): BattlePlan {
   const val: { [key: string]: string[] } = JSON.parse(s);
   const name = Object.keys(val)[0];
   const plan: BattlePlan = { name, width: 1, height: 1, units: [], walls: [] };
@@ -146,55 +198,20 @@ export function convertFromUVar(s: string) {
 
     switch (args[0]) {
       case "effect":
-        switches.attack
-          .substr(2)
-          .split(" ~ ")
-          .forEach((arg) => {
-            const [key, val] = around(arg, ": ");
-
-            if (key === "Size") {
-              const [width, height] = around(val, "x");
-              plan.width = parseInt(width, 10);
-              plan.height = parseInt(height, 10);
-            } else if (key === "Background") {
-              plan.bg = val;
-            }
-          });
+        applyEffectCmd(plan, switches);
         break;
 
       case "madd":
-        const type = args[1];
-        const label = switches.name;
-        var location = "";
-        var colour = undefined;
-        var size = "M";
-        switches.note.split(" | ").forEach((arg) => {
-          const [key, val] = around(arg, ": ");
-
-          if (key === "Location") {
-            location = val;
-          } else if (key === "Color") {
-            colour = val;
-          } else if (key === "Size") {
-            size = val;
-          }
-        });
-
-        plan.units.push({
-          type,
-          label,
-          colour,
-          size,
-          ...parseCellLabel(location),
-        });
+        applyMAddCommand(plan, args, switches);
+        break;
     }
   });
 
   return plan;
 }
 
-export function getOTFBMUrl(plan: BattlePlan) {
-  var url = "https://otfbm.io/";
+export function getOTFBMUrl(plan: BattlePlan): string {
+  let url = "https://otfbm.io/";
 
   if (plan.startx || plan.starty)
     url += cell(plan.startx || 0, plan.starty || 0) + ":";

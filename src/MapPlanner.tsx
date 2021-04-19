@@ -22,10 +22,8 @@ import {
   convertToBPlan,
   convertToUvar,
   getOTFBMUrl,
-  unitAt,
 } from "./tools";
 
-type XY = [x: number, y: number];
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
 
 function MapSettings({
@@ -191,18 +189,18 @@ function MapWalls({
   setPlan: BattlePlanUpdater;
 }) {
   function add() {
-    setPlan({
+    return setPlan({
       ...plan,
       walls: plan.walls.concat({ sx: 0, sy: 0, ex: 0, ey: 0 }),
     });
   }
 
   function remove(idx: number) {
-    setPlan({ ...plan, walls: plan.walls.filter((_, i) => i !== idx) });
+    return setPlan({ ...plan, walls: plan.walls.filter((_, i) => i !== idx) });
   }
 
   function update(idx: number, patch: Partial<Wall>) {
-    setPlan({
+    return setPlan({
       ...plan,
       walls: plan.walls.map((w, i) => (i === idx ? { ...w, ...patch } : w)),
     });
@@ -279,14 +277,14 @@ function MapWalls({
 
 function MapDetails({
   plan,
-  selection,
+  selected,
   setPlan,
 }: {
   plan: BattlePlan;
-  selection?: XY;
+  selected?: number;
   setPlan: BattlePlanUpdater;
 }) {
-  const unit = selection && unitAt(plan, ...selection);
+  const unit = typeof selected === "number" ? plan.units[selected] : undefined;
 
   return (
     <div className="MapDetails">
@@ -329,28 +327,26 @@ export default function MapPlanner(): JSX.Element {
     loads: [],
   });
 
-  const [selection, setSelection] = useState<XY>();
-  function select(x: number, y: number) {
-    const current = selection && unitAt(plan, ...selection);
+  const [selected, setSelected] = useState<number>();
+  function add(x: number, y: number) {
+    const unit =
+      typeof selected === "number" ? plan.units[selected] : undefined;
 
-    const unit = unitAt(plan, x, y);
-    if (!unit)
-      setPlan({
-        ...plan,
-        units: [
-          ...plan.units,
-          {
-            x,
-            y,
-            size: current?.size || "M",
-            label: current?.label || "",
-            type: current?.type || "",
-            colour: current?.colour,
-          },
-        ],
-      });
-
-    setSelection([x, y]);
+    setSelected(plan.units.length);
+    setPlan({
+      ...plan,
+      units: [
+        ...plan.units,
+        {
+          x,
+          y,
+          size: unit?.size || "M",
+          label: unit?.label || "",
+          type: unit?.type || "",
+          colour: unit?.colour,
+        },
+      ],
+    });
   }
 
   function parse(s: string) {
@@ -360,8 +356,13 @@ export default function MapPlanner(): JSX.Element {
 
   return (
     <div className="MapPlanner">
-      <MapView onClick={select} plan={plan} />
-      <MapDetails plan={plan} setPlan={setPlan} selection={selection} />
+      <MapView
+        onSelect={setSelected}
+        onAdd={add}
+        plan={plan}
+        selected={selected}
+      />
+      <MapDetails plan={plan} setPlan={setPlan} selected={selected} />
       <MapCode onChange={parse} plan={plan} uvar={true} />
     </div>
   );

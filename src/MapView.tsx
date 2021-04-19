@@ -19,10 +19,12 @@ const sizeLookup: { [size: string]: number } = {
 function MapUnit({
   onClick,
   plan,
+  selected,
   unit: u,
 }: {
   onClick: (x: number, y: number) => void;
   plan: BattlePlan;
+  selected: boolean;
   unit: Unit;
 }) {
   const [hover, setHover] = useState(false);
@@ -46,7 +48,7 @@ function MapUnit({
         cy={y}
         r={ssize - 2}
         stroke="black"
-        strokeWidth={hover ? 4 : 1}
+        strokeWidth={hover || selected ? 4 : 1}
         fill={ColourValues[colour]}
         onClick={click}
       />
@@ -91,11 +93,15 @@ function MapWall({ plan, wall }: { plan: BattlePlan; wall: Wall }) {
 }
 
 export function MapView({
-  onClick,
+  onAdd,
+  onSelect,
   plan,
+  selected,
 }: {
-  onClick: (x: number, y: number) => void;
+  onAdd: (x: number, y: number) => void;
+  onSelect: (i: number) => void;
   plan: BattlePlan;
+  selected?: number;
 }): JSX.Element {
   const size = plan.gridsize || 40;
   const sx = plan.width * size;
@@ -142,7 +148,7 @@ export function MapView({
               y={size * y}
               width={size}
               height={size}
-              onClick={() => onClick(x, y)}
+              onClick={() => onAdd(x, y)}
             />
           ))
         )}
@@ -161,7 +167,13 @@ export function MapView({
         <MapWall key={"w" + i} plan={plan} wall={w} />
       ))}
       {plan.units.map((u, i) => (
-        <MapUnit key={"u" + i} onClick={onClick} plan={plan} unit={u} />
+        <MapUnit
+          key={"u" + i}
+          onClick={() => onSelect(i)}
+          plan={plan}
+          selected={selected === i}
+          unit={u}
+        />
       ))}
     </svg>
   );

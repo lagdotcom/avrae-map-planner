@@ -59,4 +59,5 @@ export default interface BattlePlan {
   starty?: number;
   gridsize?: number;
   walls: Wall[];
+  loads: string[];
 }

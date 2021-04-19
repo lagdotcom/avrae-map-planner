@@ -78,6 +78,11 @@ function getWall(w: Wall) {
   return parts.join(" ");
 }
 
+// TODO: don't actually know the syntax for this!
+function getLoad(url: string) {
+  return `!i load ${url}`;
+}
+
 export function convertToBPlan(plan: BattlePlan): string[] {
   const mapArgs = [`-mapsize ${plan.width}x${plan.height}`];
   if (plan.bg) mapArgs.push(`-bg ${plan.bg}`);
@@ -88,6 +93,7 @@ export function convertToBPlan(plan: BattlePlan): string[] {
     `!bplan map ${id} set ${mapArgs.join(" ")}`,
     ...plan.units.map((u) => `!bplan add ${id} ${getMAdd(u)}`),
     ...plan.walls.map((w) => `!bplan add ${id} ${getWall(w)}`),
+    ...plan.loads.map((url) => `!bplan add ${id} ${getLoad(url)}`),
   ];
 }
 
@@ -103,6 +109,7 @@ export function convertToUvar(plan: BattlePlan): string {
         `!i effect DM map -attack "||${mapArgs.join(" ~ ")}"`,
         ...plan.units.map(getMAdd),
         ...plan.walls.map(getWall),
+        ...plan.loads.map(getLoad),
       ],
     })
   );
@@ -215,10 +222,21 @@ function applyWallCommand(plan: BattlePlan, switches: StringDict) {
   plan.walls.push(w);
 }
 
+function applyLoadCommand(plan: BattlePlan, args: string[]) {
+  plan.loads.push(args[1]);
+}
+
 export function convertFromUVar(s: string): BattlePlan {
   const val: { [key: string]: string[] } = JSON.parse(s);
   const name = Object.keys(val)[0];
-  const plan: BattlePlan = { name, width: 1, height: 1, units: [], walls: [] };
+  const plan: BattlePlan = {
+    name,
+    width: 1,
+    height: 1,
+    units: [],
+    walls: [],
+    loads: [],
+  };
   val[name].forEach((line) => {
     const { command, args, switches } = splitCommand(line);
     if (!["!i", "!init"].includes(command)) return;
@@ -234,6 +252,10 @@ export function convertFromUVar(s: string): BattlePlan {
 
       case "wall":
         applyWallCommand(plan, switches);
+        break;
+
+      case "load":
+        applyLoadCommand(plan, args);
         break;
     }
   });
@@ -276,6 +298,7 @@ export function getOTFBMUrl(plan: BattlePlan): string {
   });
 
   if (plan.bg) url += "?bg=" + plan.bg;
+  plan.loads.forEach((data) => (url += "/?load=" + data));
   return url;
 }
 

@@ -15,6 +15,7 @@ import NumberInput from "./inputs/NumberInput";
 import TableEnumInput from "./inputs/TableEnumInput";
 import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
+import TextInput from "./inputs/TextInput";
 import { MapView } from "./MapView";
 import {
   convertFromUVar,
@@ -59,6 +60,57 @@ function MapSettings({
         />
       </tbody>
     </table>
+  );
+}
+
+function MapLoads({
+  plan,
+  setPlan,
+}: {
+  plan: BattlePlan;
+  setPlan: BattlePlanUpdater;
+}) {
+  function add() {
+    setPlan({
+      ...plan,
+      loads: plan.loads.concat(""),
+    });
+  }
+
+  function remove(idx: number) {
+    setPlan({ ...plan, loads: plan.loads.filter((_, i) => i !== idx) });
+  }
+
+  function update(idx: number, url: string) {
+    setPlan({
+      ...plan,
+      loads: plan.loads.map((w, i) => (i === idx ? url : w)),
+    });
+  }
+
+  return (
+    <div className="MapLoads">
+      <strong>JSON Data Loads</strong> <button onClick={add}>Add</button>
+      <table>
+        <thead>
+          <tr>
+            <th>URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plan.loads.map((url, i) => (
+            <tr key={i}>
+              <td>
+                <TextInput value={url} onChange={(url) => update(i, url)} />
+              </td>
+              <td>
+                <button onClick={() => remove(i)}>-</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -240,6 +292,7 @@ function MapDetails({
     <div className="MapDetails">
       <button onClick={() => window.open(getOTFBMUrl(plan))}>Test</button>
       <MapSettings plan={plan} setPlan={setPlan} />
+      <MapLoads plan={plan} setPlan={setPlan} />
       {unit && <UnitSettings plan={plan} setPlan={setPlan} unit={unit} />}
       <MapWalls plan={plan} setPlan={setPlan} />
     </div>
@@ -273,6 +326,7 @@ export default function MapPlanner(): JSX.Element {
     height: 5,
     units: [],
     walls: [],
+    loads: [],
   });
 
   const [selection, setSelection] = useState<XY>();

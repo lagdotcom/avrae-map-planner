@@ -18,21 +18,20 @@
 
   .MapDetails {
     grid-area: details;
+
+    table {
+      width: 100%;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+    }
   }
 
   .MapCode {
     grid-area: code;
     font-family: monospace;
     white-space: pre-line;
-  }
-
-  .MapWalls {
-    table {
-      width: 100%;
-    }
-    input {
-      box-sizing: border-box;
-      width: 100%;
-    }
   }
 }

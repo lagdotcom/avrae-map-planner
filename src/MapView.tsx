@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import BattlePlan, {
   ColourValues,
@@ -25,22 +25,30 @@ function MapUnit({
   plan: BattlePlan;
   unit: Unit;
 }) {
+  const [hover, setHover] = useState(false);
+
   const size = plan.gridsize || 40;
   const colour = u.colour || "r";
   const scale = sizeLookup[u.size];
   const ssize = scale * size;
   const x = (u.x + Math.max(scale, 0.5)) * size;
   const y = (u.y + Math.max(scale, 0.5)) * size;
+  const click = () => onClick(u.x, u.y);
 
   return (
-    <g onClick={() => onClick(u.x, u.y)}>
+    <g
+      className="unit"
+      onMouseOver={() => setHover(true)}
+      onMouseOut={() => setHover(false)}
+    >
       <circle
         cx={x}
         cy={y}
         r={ssize - 2}
         stroke="black"
+        strokeWidth={hover ? 4 : 1}
         fill={ColourValues[colour]}
-        pointerEvents="none"
+        onClick={click}
       />
       {colour !== "w" && (
         <circle
@@ -49,7 +57,7 @@ function MapUnit({
           r={ssize - 3}
           stroke="white"
           fill="transparent"
-          pointerEvents="none"
+          onClick={click}
         />
       )}
       <text

@@ -251,13 +251,16 @@ export function getOTFBMUrl(plan: BattlePlan): string {
   if (plan.bgx || plan.bgy) url += `/@o${plan.bgx || 0}:${plan.bgy || 0}`;
 
   if (plan.walls.length) {
+    let cursor = "";
     url += "/";
     plan.walls.forEach((w) => {
-      url += "_";
+      const next = cell(w.sx, w.sy);
+      if (next !== cursor) url += "_";
       if (w.colour) url += "-c" + w.colour;
-      url += cell(w.sx, w.sy);
+      if (next !== cursor) url += next;
       if (w.door) url += "-" + w.door;
-      url += cell(w.ex, w.ey);
+      cursor = cell(w.ex, w.ey);
+      url += cursor;
     });
   }
 

@@ -92,6 +92,16 @@ function UnitSettings({
       <button onClick={del}>Delete</button>
       <table>
         <tbody>
+          <TableNumberInput
+            label="X"
+            value={unit.x}
+            onChange={(x) => update({ x })}
+          />
+          <TableNumberInput
+            label="Y"
+            value={unit.y}
+            onChange={(y) => update({ y })}
+          />
           <TableTextInput
             label="Label"
             value={unit.label}

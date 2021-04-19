@@ -69,18 +69,18 @@ function getMAdd(u: Unit) {
   return parts.join(" ");
 }
 
-// TODO: don't actually know the syntax for this!
 function getWall(w: Wall) {
-  const parts = [`!i wall`, `-start ${w.sx},${w.sy}`, `-end ${w.ex},${w.ey}`];
-  if (w.colour) parts.push(`-color ${w.colour}`);
-  if (w.door) parts.push(`-door ${w.door}`);
+  const start = cell(w.sx, w.sy);
+  const end = cell(w.ex, w.ey);
+  const door = w.door ? "-" + w.door : "";
+  const color = w.colour ? "," + w.colour : "";
 
-  return parts.join(" ");
+  return `!map -wall ${start}${door}${end}${color}`;
 }
 
 // TODO: don't actually know the syntax for this!
 function getLoad(url: string) {
-  return `!i load ${url}`;
+  return `!map -load ${url}`;
 }
 
 export function convertToBPlan(plan: BattlePlan): string[] {
@@ -210,20 +210,26 @@ function applyMAddCommand(
   });
 }
 
-const int = (n: string) => parseInt(n, 10);
+function addWall(plan: BattlePlan, data: string) {
+  const parts = data.split("_");
 
-function applyWallCommand(plan: BattlePlan, switches: StringDict) {
-  const [sx, sy] = switches.start.split(",").map(int);
-  const [ex, ey] = switches.end.split(",").map(int);
-  const w: Wall = { sx, sy, ex, ey };
-  if (switches.color) w.colour = switches.color as ColourName;
-  if (switches.door) w.door = switches.door as DoorType;
+  parts.forEach((part) => {
+    const bits = /([A-Z]+\d+)(?:-(\w))?([A-Z]+\d+)(?:,(\w+))?/.exec(part);
+    if (!bits) return;
 
-  plan.walls.push(w);
+    const [, start, door, end, color] = bits;
+    const { x: sx, y: sy } = parseCellLabel(start);
+    const { x: ex, y: ey } = parseCellLabel(end);
+
+    const wall: Wall = { sx, sy, ex, ey };
+    if (door) wall.door = door as DoorType;
+    if (color) wall.colour = color as ColourName;
+    plan.walls.push(wall);
+  });
 }
 
-function applyLoadCommand(plan: BattlePlan, args: string[]) {
-  plan.loads.push(args[1]);
+function addLoad(plan: BattlePlan, data: string) {
+  plan.loads.push(data);
 }
 
 export function convertFromUVar(s: string): BattlePlan {
@@ -239,24 +245,19 @@ export function convertFromUVar(s: string): BattlePlan {
   };
   val[name].forEach((line) => {
     const { command, args, switches } = splitCommand(line);
-    if (!["!i", "!init"].includes(command)) return;
+    if (["!i", "!init"].includes(command)) {
+      switch (args[0]) {
+        case "effect":
+          applyEffectCmd(plan, switches);
+          break;
 
-    switch (args[0]) {
-      case "effect":
-        applyEffectCmd(plan, switches);
-        break;
-
-      case "madd":
-        applyMAddCommand(plan, args, switches);
-        break;
-
-      case "wall":
-        applyWallCommand(plan, switches);
-        break;
-
-      case "load":
-        applyLoadCommand(plan, args);
-        break;
+        case "madd":
+          applyMAddCommand(plan, args, switches);
+          break;
+      }
+    } else if (command === "!map") {
+      if (switches.wall) addWall(plan, switches.wall);
+      if (switches.load) addLoad(plan, switches.load);
     }
   });
 
@@ -277,12 +278,12 @@ export function getOTFBMUrl(plan: BattlePlan): string {
     let colour = "k";
     url += "/";
     plan.walls.forEach((w) => {
-      const next = cell(w.sx, w.sy);
+      const from = cell(w.sx, w.sy);
       if (w.colour && w.colour !== colour) {
-        url += `_-c${w.colour}${next}`;
+        url += `_-c${w.colour}${from}`;
         colour = w.colour;
-      } else if (next !== cursor) {
-        url += next;
+      } else if (from !== cursor) {
+        url += "_" + from;
       }
       if (w.door) url += "-" + w.door;
       cursor = cell(w.ex, w.ey);

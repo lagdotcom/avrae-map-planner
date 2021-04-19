@@ -12,7 +12,7 @@ export const ColourValues = {
   o: "#f80",
   pk: "#fce",
 };
-type ColourName = keyof typeof ColourValues;
+export type ColourName = keyof typeof ColourValues;
 export const Colours = Object.keys(ColourValues) as ColourName[];
 export const LightColours = ["w", "g", "y", "c", "o", "pk"] as ColourName[];
 
@@ -31,11 +31,11 @@ export interface Unit {
 
 export const DoorTypes = {
   o: "open",
-  c: "closed",
+  d: "closed",
   b: "double",
   s: "secret",
 };
-type DoorType = keyof typeof DoorTypes;
+export type DoorType = keyof typeof DoorTypes;
 export const Doors = Object.keys(DoorTypes) as DoorType[];
 
 export interface Wall {

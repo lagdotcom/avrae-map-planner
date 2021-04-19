@@ -1,4 +1,6 @@
-import BattlePlan, { Unit } from "./BattlePlan";
+import BattlePlan, { ColourName, DoorType, Unit, Wall } from "./BattlePlan";
+
+type StringDict = Record<string, string>;
 
 export function en(count: number): number[] {
   return Array.from(Array(count).keys());
@@ -67,6 +69,15 @@ function getMAdd(u: Unit) {
   return parts.join(" ");
 }
 
+// TODO: don't actually know the syntax for this!
+function getWall(w: Wall) {
+  const parts = [`!i wall`, `-start ${w.sx},${w.sy}`, `-end ${w.ex},${w.ey}`];
+  if (w.colour) parts.push(`-color ${w.colour}`);
+  if (w.door) parts.push(`-door ${w.door}`);
+
+  return parts.join(" ");
+}
+
 export function convertToBPlan(plan: BattlePlan): string[] {
   const mapArgs = [`-mapsize ${plan.width}x${plan.height}`];
   if (plan.bg) mapArgs.push(`-bg ${plan.bg}`);
@@ -76,6 +87,7 @@ export function convertToBPlan(plan: BattlePlan): string[] {
     `!bplan new ${id}`,
     `!bplan map ${id} set ${mapArgs.join(" ")}`,
     ...plan.units.map((u) => `!bplan add ${id} ${getMAdd(u)}`),
+    ...plan.walls.map((w) => `!bplan add ${id} ${getWall(w)}`),
   ];
 }
 
@@ -83,20 +95,23 @@ export function convertToUvar(plan: BattlePlan): string {
   const mapArgs = [`Size: ${plan.width}x${plan.height}`];
   if (plan.bg) mapArgs.push(`Background: ${plan.bg}`);
 
-  const cmds: string[] = [];
-  cmds.push(
-    "!i add 100 DM -p",
-    `!i effect DM map -attack "||${mapArgs.join(" ~ ")}"`
+  return (
+    "!uvar Battles " +
+    JSON.stringify({
+      [plan.name]: [
+        "!i add 100 DM -p",
+        `!i effect DM map -attack "||${mapArgs.join(" ~ ")}"`,
+        ...plan.units.map(getMAdd),
+        ...plan.walls.map(getWall),
+      ],
+    })
   );
-  cmds.push(...plan.units.map(getMAdd));
-
-  return "!uvar Battles " + JSON.stringify({ [plan.name]: cmds });
 }
 
 function splitCommand(line: string) {
   let command = "";
   const args: string[] = [];
-  const switches: Record<string, string> = {};
+  const switches: StringDict = {};
   let qmode = false;
   let smode = "";
   let current = "";
@@ -140,7 +155,7 @@ function around(s: string, mid: string) {
   return [key, val];
 }
 
-function applyEffectCmd(plan: BattlePlan, switches: Record<string, string>) {
+function applyEffectCmd(plan: BattlePlan, switches: StringDict) {
   switches.attack
     .substr(2)
     .split(" ~ ")
@@ -160,7 +175,7 @@ function applyEffectCmd(plan: BattlePlan, switches: Record<string, string>) {
 function applyMAddCommand(
   plan: BattlePlan,
   args: string[],
-  switches: Record<string, string>
+  switches: StringDict
 ) {
   const type = args[1];
   const label = switches.name;
@@ -188,6 +203,18 @@ function applyMAddCommand(
   });
 }
 
+const int = (n: string) => parseInt(n, 10);
+
+function applyWallCommand(plan: BattlePlan, switches: StringDict) {
+  const [sx, sy] = switches.start.split(",").map(int);
+  const [ex, ey] = switches.end.split(",").map(int);
+  const w: Wall = { sx, sy, ex, ey };
+  if (switches.color) w.colour = switches.color as ColourName;
+  if (switches.door) w.door = switches.door as DoorType;
+
+  plan.walls.push(w);
+}
+
 export function convertFromUVar(s: string): BattlePlan {
   const val: { [key: string]: string[] } = JSON.parse(s);
   const name = Object.keys(val)[0];
@@ -203,6 +230,10 @@ export function convertFromUVar(s: string): BattlePlan {
 
       case "madd":
         applyMAddCommand(plan, args, switches);
+        break;
+
+      case "wall":
+        applyWallCommand(plan, switches);
         break;
     }
   });
@@ -243,4 +274,8 @@ export function getOTFBMUrl(plan: BattlePlan): string {
 
   if (plan.bg) url += "?bg=" + plan.bg;
   return url;
+}
+
+export function lerp(a: number, b: number, r: number): number {
+  return a * (1 - r) + b * r;
 }

@@ -4,236 +4,28 @@ import React, { useState } from "react";
 
 import BattlePlan, {
   Colours,
-  ColourValues,
-  LightColours,
+  Doors,
+  DoorTypes,
   Sizes,
   Unit,
+  Wall,
 } from "./BattlePlan";
+import EnumInput from "./inputs/EnumInput";
+import NumberInput from "./inputs/NumberInput";
+import TableEnumInput from "./inputs/TableEnumInput";
+import TableNumberInput from "./inputs/TableNumberInput";
+import TableTextInput from "./inputs/TableTextInput";
+import { MapView } from "./MapView";
 import {
-  columnLabel,
   convertFromUVar,
   convertToBPlan,
   convertToUvar,
-  en,
   getOTFBMUrl,
   unitAt,
 } from "./tools";
 
 type XY = [x: number, y: number];
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
-
-const sizeLookup: { [size: string]: number } = {
-  T: 0.3,
-  S: 0.45,
-  M: 0.5,
-  L: 1,
-  H: 1.5,
-  G: 2,
-};
-function MapUnit({
-  onClick,
-  plan,
-  unit: u,
-}: {
-  onClick: (x: number, y: number) => void;
-  plan: BattlePlan;
-  unit: Unit;
-}) {
-  const size = plan.gridsize || 40;
-  const colour = u.colour || "r";
-  const scale = sizeLookup[u.size];
-  const ssize = scale * size;
-  const x = (u.x + Math.max(scale, 0.5)) * size;
-  const y = (u.y + Math.max(scale, 0.5)) * size;
-
-  return (
-    <g onClick={() => onClick(u.x, u.y)}>
-      <circle
-        cx={x}
-        cy={y}
-        r={ssize - 2}
-        stroke="black"
-        fill={ColourValues[colour]}
-        pointerEvents="none"
-      />
-      {colour !== "w" && (
-        <circle
-          cx={x}
-          cy={y}
-          r={ssize - 3}
-          stroke="white"
-          fill="transparent"
-          pointerEvents="none"
-        />
-      )}
-      <text
-        x={x}
-        y={y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill={LightColours.includes(colour) ? "black" : "white"}
-        fontSize={ssize * 0.6}
-        pointerEvents="none"
-      >
-        {u.label}
-      </text>
-    </g>
-  );
-}
-
-function MapView({
-  onClick,
-  plan,
-}: {
-  onClick: (x: number, y: number) => void;
-  plan: BattlePlan;
-}) {
-  const size = plan.gridsize || 40;
-  const sx = plan.width * size;
-  const sy = plan.height * size;
-  const padx = (plan.width + 2) * size;
-  const pady = (plan.height + 2) * size;
-
-  return (
-    <svg
-      className="MapView"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={`${-size} ${-size} ${padx} ${pady}`}
-    >
-      <g>
-        {en(plan.width).map((x) => (
-          <text
-            key={"col" + x}
-            x={size * (x + 0.5)}
-            y="-20"
-            textAnchor="middle"
-            dominantBaseline="central"
-          >
-            {columnLabel(x)}
-          </text>
-        ))}
-        {en(plan.height).map((y) => (
-          <text
-            key={"row" + y}
-            x="-20"
-            y={size * (y + 0.5)}
-            textAnchor="middle"
-            dominantBaseline="central"
-          >
-            {y + 1}
-          </text>
-        ))}
-      </g>
-      <g stroke="grey" fill="white">
-        {en(plan.width).map((x) =>
-          en(plan.height).map((y) => (
-            <rect
-              key={`${x},${y}`}
-              x={size * x}
-              y={size * y}
-              width={size}
-              height={size}
-              onClick={() => onClick(x, y)}
-            />
-          ))
-        )}
-      </g>
-      <rect
-        x="0"
-        y="0"
-        width={sx}
-        height={sy}
-        stroke="black"
-        strokeWidth="2"
-        fill="transparent"
-        pointerEvents="none"
-      />
-      {plan.units.map((u, i) => (
-        <MapUnit key={"u" + i} onClick={onClick} plan={plan} unit={u} />
-      ))}
-    </svg>
-  );
-}
-
-function TextInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <tr>
-      <th>{label}</th>
-      <td>
-        <input value={value} onChange={(e) => onChange(e.target.value)} />
-      </td>
-    </tr>
-  );
-}
-
-function NumberInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <tr>
-      <th>{label}</th>
-      <td>
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.valueAsNumber)}
-        />
-      </td>
-    </tr>
-  );
-}
-
-function EnumInput<T extends string>({
-  empty,
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  empty?: string;
-  label: string;
-  value: T | undefined;
-  options: T[];
-  onChange: (value: T | undefined) => void;
-}) {
-  function resolve(val: string) {
-    if (val !== empty) return val as T;
-    return undefined;
-  }
-
-  return (
-    <tr>
-      <th>{label}</th>
-      <td>
-        <select
-          value={value}
-          onChange={(e) => onChange(resolve(e.target.value))}
-        >
-          {empty && <option>{empty}</option>}
-          {options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
-      </td>
-    </tr>
-  );
-}
 
 function MapSettings({
   plan,
@@ -245,22 +37,22 @@ function MapSettings({
   return (
     <table className="MapSettings">
       <tbody>
-        <TextInput
+        <TableTextInput
           label="Name"
           value={plan.name}
           onChange={(name) => setPlan({ ...plan, name })}
         />
-        <NumberInput
+        <TableNumberInput
           label="Width"
           value={plan.width}
           onChange={(width) => setPlan({ ...plan, width: width || 1 })}
         />
-        <NumberInput
+        <TableNumberInput
           label="Height"
           value={plan.height}
           onChange={(height) => setPlan({ ...plan, height: height || 1 })}
         />
-        <TextInput
+        <TableTextInput
           label="BG"
           value={plan.bg || ""}
           onChange={(bg) => setPlan({ ...plan, bg })}
@@ -300,29 +92,123 @@ function UnitSettings({
       <button onClick={del}>Delete</button>
       <table>
         <tbody>
-          <TextInput
+          <TableTextInput
             label="Label"
             value={unit.label}
             onChange={(label) => update({ label })}
           />
-          <TextInput
+          <TableTextInput
             label="Type"
             value={unit.type}
             onChange={(type) => update({ type })}
           />
-          <EnumInput
+          <TableEnumInput
             label="Colour"
             value={unit.colour}
             empty="(default)"
             options={Colours}
             onChange={(colour) => update({ colour })}
           />
-          <EnumInput
+          <TableEnumInput
             label="Size"
             value={unit.size}
             options={Sizes}
             onChange={(size) => update({ size })}
           />
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MapWalls({
+  plan,
+  setPlan,
+}: {
+  plan: BattlePlan;
+  setPlan: BattlePlanUpdater;
+}) {
+  function add() {
+    setPlan({
+      ...plan,
+      walls: plan.walls.concat({ sx: 0, sy: 0, ex: 0, ey: 0 }),
+    });
+  }
+
+  function remove(idx: number) {
+    setPlan({ ...plan, walls: plan.walls.filter((_, i) => i !== idx) });
+  }
+
+  function update(idx: number, patch: Partial<Wall>) {
+    setPlan({
+      ...plan,
+      walls: plan.walls.map((w, i) => (i === idx ? { ...w, ...patch } : w)),
+    });
+  }
+
+  return (
+    <div className="MapWalls">
+      <strong>Walls</strong> <button onClick={add}>Add</button>
+      <table>
+        <thead>
+          <tr>
+            <th>SX</th>
+            <th>SY</th>
+            <th>EX</th>
+            <th>EY</th>
+            <th>Col</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plan.walls.map((w, i) => (
+            <tr key={i} className="line">
+              <td>
+                <NumberInput
+                  value={w.sx}
+                  onChange={(sx) => update(i, { sx })}
+                />
+              </td>
+              <td>
+                <NumberInput
+                  value={w.sy}
+                  onChange={(sy) => update(i, { sy })}
+                />
+              </td>
+              <td>
+                <NumberInput
+                  value={w.ex}
+                  onChange={(ex) => update(i, { ex })}
+                />
+              </td>
+              <td>
+                <NumberInput
+                  value={w.ey}
+                  onChange={(ey) => update(i, { ey })}
+                />
+              </td>
+              <td>
+                <EnumInput
+                  empty="(default)"
+                  value={w.colour}
+                  options={Colours}
+                  onChange={(colour) => update(i, { colour })}
+                />
+              </td>
+              <td>
+                <EnumInput
+                  empty="wall"
+                  value={w.door}
+                  options={Doors}
+                  label={(k) => DoorTypes[k]}
+                  onChange={(door) => update(i, { door })}
+                />
+              </td>
+              <td>
+                <button onClick={() => remove(i)}>-</button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -345,6 +231,7 @@ function MapDetails({
       <button onClick={() => window.open(getOTFBMUrl(plan))}>Test</button>
       <MapSettings plan={plan} setPlan={setPlan} />
       {unit && <UnitSettings plan={plan} setPlan={setPlan} unit={unit} />}
+      <MapWalls plan={plan} setPlan={setPlan} />
     </div>
   );
 }

@@ -302,8 +302,11 @@ export function getOTFBMUrl(plan: BattlePlan): string {
     }
   });
 
-  if (plan.bg) url += "?bg=" + plan.bg;
-  plan.loads.forEach((data) => (url += "/?load=" + data));
+  const queries: string[] = [];
+  if (plan.bg) queries.push("bg=" + plan.bg);
+  plan.loads.forEach((data) => queries.push("load=" + data));
+
+  if (queries.length) url += "?" + queries.join("&");
   return url;
 }
 

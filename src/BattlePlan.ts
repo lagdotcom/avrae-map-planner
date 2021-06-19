@@ -51,6 +51,7 @@ export default interface BattlePlan {
   name: string;
   width: number;
   height: number;
+  zoom: number;
   units: Unit[];
   bg?: string;
   bgx?: number;

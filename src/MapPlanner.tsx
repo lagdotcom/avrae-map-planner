@@ -52,6 +52,16 @@ function MapSettings({
           value={plan.height}
           onChange={(height) => setPlan({ ...plan, height: height || 1 })}
         />
+        <TableNumberInput
+          label="Zoom"
+          value={plan.zoom}
+          onChange={zoom => setPlan({ ...plan, zoom: zoom || 1 })}
+        />
+        <TableNumberInput
+          label="Grid Size"
+          value={plan.gridsize || 40}
+          onChange={gridsize => setPlan({ ...plan, gridsize: gridsize || 1 })}
+        />
         <TableTextInput
           label="BG"
           value={plan.bg || ""}
@@ -323,6 +333,7 @@ export default function MapPlanner(): JSX.Element {
     name: "name",
     width: 5,
     height: 5,
+    zoom: 1,
     units: [],
     walls: [],
     loads: [],

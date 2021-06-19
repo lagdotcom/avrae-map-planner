@@ -239,6 +239,7 @@ export function convertFromUVar(s: string): BattlePlan {
     name,
     width: 1,
     height: 1,
+    zoom: 1,
     units: [],
     walls: [],
     loads: [],
@@ -270,6 +271,7 @@ export function getOTFBMUrl(plan: BattlePlan): string {
   if (plan.startx || plan.starty)
     url += cell(plan.startx || 0, plan.starty || 0) + ":";
   url += `${plan.width}x${plan.height}`;
+  if (plan.zoom !== 1) url += `/@${plan.zoom}`;
   if (plan.gridsize) url += `/@c${plan.gridsize}`;
   if (plan.bgx || plan.bgy) url += `/@o${plan.bgx || 0}:${plan.bgy || 0}`;
 

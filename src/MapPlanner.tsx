@@ -326,6 +326,7 @@ export default function MapPlanner(): JSX.Element {
     walls: [],
     loads: [],
   });
+  const [solo, setSolo] = useState<boolean>(false);
 
   const [selected, setSelected] = useState<number>();
   function add(x: number, y: number) {
@@ -355,7 +356,7 @@ export default function MapPlanner(): JSX.Element {
   }
 
   return (
-    <div className="MapPlanner">
+    <div className={`MapPlanner ${solo ? 'solo': ''}`}>
       <MapView
         onSelect={setSelected}
         onAdd={add}
@@ -364,6 +365,7 @@ export default function MapPlanner(): JSX.Element {
       />
       <MapDetails plan={plan} setPlan={setPlan} selected={selected} />
       <MapCode onChange={parse} plan={plan} uvar={true} />
+      <button className="SoloButton" onClick={() => setSolo(!solo)}>Solo</button>
     </div>
   );
 }

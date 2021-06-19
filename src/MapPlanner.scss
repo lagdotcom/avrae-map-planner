@@ -6,6 +6,17 @@
   width: 100%;
   height: 100vh;
 
+  &.solo {
+    grid-template: "view";
+    .MapDetails, .MapCode { display: none; }
+  }
+
+  .SoloButton {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+
   .MapView {
     grid-area: view;
     max-width: 100%;

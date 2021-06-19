@@ -313,3 +313,8 @@ export function getOTFBMUrl(plan: BattlePlan): string {
 export function lerp(a: number, b: number, r: number): number {
   return a * (1 - r) + b * r;
 }
+
+export function mod(n:number, x:number): number {
+  while (n < 0) n += x;
+  return n % x;
+}

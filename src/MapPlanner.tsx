@@ -22,6 +22,7 @@ import {
   convertToBPlan,
   convertToUvar,
   getOTFBMUrl,
+  mod,
 } from "./tools";
 
 type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
@@ -350,13 +351,22 @@ export default function MapPlanner(): JSX.Element {
     });
   }
 
+  function shift(mx: number, my: number) {
+    function apply(u: Unit) {
+      const { x, y } = u;
+      return { ...u, x: mod(x + mx, plan.width), y: mod(y + my, plan.height) }
+    }
+
+    setPlan({ ...plan, units: plan.units.map(apply) })
+  }
+
   function parse(s: string) {
     const stripped = s.startsWith("!uvar Battles ") ? s.substr(14) : s;
     setPlan(convertFromUVar(stripped));
   }
 
   return (
-    <div className={`MapPlanner ${solo ? 'solo': ''}`}>
+    <div className={`MapPlanner ${solo ? 'solo' : ''}`}>
       <MapView
         onSelect={setSelected}
         onAdd={add}
@@ -365,7 +375,13 @@ export default function MapPlanner(): JSX.Element {
       />
       <MapDetails plan={plan} setPlan={setPlan} selected={selected} />
       <MapCode onChange={parse} plan={plan} uvar={true} />
-      <button className="SoloButton" onClick={() => setSolo(!solo)}>Solo</button>
+      <div className="ButtonBox">
+        <button onClick={() => setSolo(!solo)}>Solo</button>
+        <button onClick={() => shift(-1, 0)}>&lt;</button>
+        <button onClick={() => shift(0, -1)}>^</button>
+        <button onClick={() => shift(1, 0)}>&gt;</button>
+        <button onClick={() => shift(0, 1)}>v</button>
+      </div>
     </div>
   );
 }

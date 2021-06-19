@@ -11,10 +11,15 @@
     .MapDetails, .MapCode { display: none; }
   }
 
-  .SoloButton {
+  .ButtonBox {
     position: absolute;
     right: 10px;
     bottom: 10px;
+
+    button { padding: 5px 10px; }
+    button + button {
+      margin-left: 1em;
+    }
   }
 
   .MapView {

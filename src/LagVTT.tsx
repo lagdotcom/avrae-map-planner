@@ -9,6 +9,7 @@ import { addUnit, moveUnit } from "./store/plan";
 import MapPanel from "./MapPanel";
 import UnitPanel from "./UnitPanel";
 import { getCurrentUnitIndex } from "./store/selectors";
+import { mod } from "./tools";
 
 const mapStateToProps = (state: AppState) => ({
   images: state.db.images,
@@ -55,6 +56,14 @@ const LagVTT: FC<Props> = ({
     openUnitPanel(plan.units.length);
   }, ["shift+U"]);
   useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);
+  useGlobalKeyDown(
+    () => openUnitPanel(mod((selected ?? 0) + 1, plan.units.length)),
+    ["PageDown"]
+  );
+  useGlobalKeyDown(
+    () => openUnitPanel(mod((selected ?? 0) - 1, plan.units.length)),
+    ["PageUp"]
+  );
 
   return (
     <div className="LagVTT">

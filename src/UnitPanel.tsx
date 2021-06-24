@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { Colours, Sizes, Unit, UnitMinusXY } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
@@ -12,7 +12,7 @@ import { getCurrentUnit, getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
 import useGlobalKeyDown from "./useGlobalKeyDown";
 
-function ActualUnitPanel({
+function UnitPanel({
   db,
   height,
   i,
@@ -31,6 +31,8 @@ function ActualUnitPanel({
   u: Unit;
   width: number;
 }) {
+  const labelRef = useRef<HTMLInputElement>(null);
+
   useGlobalKeyDown(
     (e) => {
       patch({ x: mod(u.x - 1, width) });
@@ -67,6 +69,16 @@ function ActualUnitPanel({
     else patch({ label });
   }
 
+  useEffect(() => {
+    const label = labelRef.current;
+
+    if (label) {
+      label.selectionStart = 0;
+      label.selectionEnd = u.label.length;
+      label.focus();
+    }
+  }, [labelRef.current]);
+
   return (
     <div className="UnitPanel Flyout show">
       <table>
@@ -83,6 +95,7 @@ function ActualUnitPanel({
           />
           <TableTextInput
             label="Label"
+            forwardRef={labelRef}
             value={u.label}
             onChange={updateLabel}
           />
@@ -125,7 +138,7 @@ const mapDispatchToProps = { patchUnit, removeUnit, saveUnit };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const UnitPanel: FC<Props> = ({
+const UnitPanelWrapper: FC<Props> = ({
   db,
   i,
   patchUnit,
@@ -147,7 +160,7 @@ const UnitPanel: FC<Props> = ({
   }
 
   return i !== undefined && u ? (
-    <ActualUnitPanel
+    <UnitPanel
       i={i}
       u={u}
       patch={patch}
@@ -159,4 +172,4 @@ const UnitPanel: FC<Props> = ({
     />
   ) : null;
 };
-export default connector(UnitPanel);
+export default connector(UnitPanelWrapper);

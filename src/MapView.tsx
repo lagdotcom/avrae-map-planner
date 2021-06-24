@@ -384,6 +384,7 @@ export function MapView({
     <svg
       className="MapView"
       xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMin"
       viewBox={`${-size} ${-size} ${padx} ${pady}`}
     >
       <defs>

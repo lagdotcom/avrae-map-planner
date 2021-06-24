@@ -1,13 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { Provider } from "react-redux";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import MapPlanner from "./MapPlanner";
 import LagVTT from "./LagVTT";
+import { store } from "./store";
 
 ReactDOM.render(
   <React.StrictMode>
-    {window.location.hash === "#vtt" ? <LagVTT /> : <MapPlanner />}
+    <Provider store={store}>
+        {window.location.hash === "#vtt" ? <LagVTT /> : <MapPlanner />}
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );

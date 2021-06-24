@@ -1,33 +1,36 @@
-import React, { FC, KeyboardEvent } from "react";
+import React, { FC } from "react";
 import { MapView } from "./MapView";
 import "./LagVTT.scss";
-import { AppState, store } from "./store";
-import { connect, ConnectedProps, Provider } from "react-redux";
+import { AppState } from "./store";
+import { connect, ConnectedProps } from "react-redux";
+import useGlobalKeyDown from "./useGlobalKeyDown";
+import { openUnitPanel } from "./store/ui";
+import { moveUnit } from "./store/plan";
 
 const mapStateToProps = (state: AppState) => ({ plan: state.plan });
-const mapDispatchToProps = {};
+const mapDispatchToProps = { moveUnit, openUnitPanel };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const LagVTT: FC<Props> = ({ plan }) => {
+const LagVTT: FC<Props> = ({ moveUnit, openUnitPanel, plan }) => {
   function onAdd() {
     console.log("todo", "onAdd");
   }
 
-  function onSelect() {
-    console.log("todo", "onSelect");
+  function onMove(i: number, x: number, y: number) {
+    moveUnit({ i, x, y });
   }
 
-  function onKey(e: KeyboardEvent) {
-    console.log("LagVTT", "onKey", e.key);
+  function onSelect(index: number) {
+    openUnitPanel(index);
   }
+
+  useGlobalKeyDown(() => openUnitPanel(), ["u"]);
 
   return (
-    <Provider store={store}>
-      <div className="LagVTT" onKeyPressCapture={onKey}>
-        <MapView plan={plan} onAdd={onAdd} onSelect={onSelect} />
-      </div>
-    </Provider>
+    <div className="LagVTT">
+      <MapView plan={plan} onAdd={onAdd} onMove={onMove} onSelect={onSelect} />
+    </div>
   );
 };
 export default connector(LagVTT);

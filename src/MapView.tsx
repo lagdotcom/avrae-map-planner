@@ -18,11 +18,15 @@ const sizeLookup: { [size: string]: number } = {
 };
 function MapUnit({
   onClick,
+  onMouseDown,
+  onMouseUp,
   plan,
   selected,
   unit: u,
 }: {
-  onClick: (x: number, y: number) => void;
+  onClick?: (x: number, y: number) => void;
+  onMouseDown?: () => void;
+  onMouseUp?: () => void;
   plan: BattlePlan;
   selected: boolean;
   unit: Unit;
@@ -35,7 +39,15 @@ function MapUnit({
   const ssize = scale * size;
   const x = (u.x + Math.max(scale, 0.5)) * size;
   const y = (u.y + Math.max(scale, 0.5)) * size;
-  const click = () => onClick(u.x, u.y);
+  const click = () => {
+    if (onClick) onClick(u.x, u.y);
+  };
+  const mouseDown = () => {
+    if (onMouseDown) onMouseDown();
+  };
+  const mouseUp = () => {
+    if (onMouseUp) onMouseUp();
+  };
 
   return (
     <g
@@ -51,6 +63,8 @@ function MapUnit({
         strokeWidth={hover || selected ? 4 : 1}
         fill={ColourValues[colour]}
         onClick={click}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
       />
       {colour !== "w" && (
         <circle
@@ -60,6 +74,8 @@ function MapUnit({
           stroke="white"
           fill="transparent"
           onClick={click}
+          onMouseDown={mouseDown}
+          onMouseUp={mouseUp}
         />
       )}
       <text
@@ -251,14 +267,58 @@ function MapLine({ plan, wall }: { plan: BattlePlan; wall: Wall }) {
   }
 }
 
+type XY = [x: number, y: number];
+
+function MeasureLine({
+  scale,
+  size,
+  source,
+  target,
+}: {
+  scale: number;
+  size: number;
+  source: XY;
+  target: XY;
+}) {
+  const [sx, sy] = source;
+  const [tx, ty] = target;
+  const h = size / 2;
+
+  const dx = sx - tx;
+  const dy = sy - ty;
+  const distance = scale * Math.sqrt(dx * dx + dy * dy);
+
+  const x1 = sx * size + h;
+  const y1 = sy * size + h;
+  const x2 = tx * size + h;
+  const y2 = ty * size + h;
+
+  return distance ? (
+    <g pointerEvents="none">
+      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="green" strokeWidth={3} />
+      <text
+        x={(x1 + x2) / 2}
+        y={(y1 + y2) / 2}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={size / 3}
+      >
+        {distance.toFixed(1)} ft.
+      </text>
+    </g>
+  ) : null;
+}
+
 export function MapView({
   onAdd,
+  onMove,
   onSelect,
   plan,
   selected,
 }: {
-  onAdd: (x: number, y: number) => void;
-  onSelect: (i: number) => void;
+  onAdd?: (x: number, y: number) => void;
+  onMove?: (i: number, x: number, y: number) => void;
+  onSelect?: (i: number) => void;
   plan: BattlePlan;
   selected?: number;
 }): JSX.Element {
@@ -267,6 +327,36 @@ export function MapView({
   const sy = plan.height * size;
   const padx = (plan.width + 2) * size;
   const pady = (plan.height + 2) * size;
+
+  const [drag, setDrag] = useState<number>();
+  const [source, setSource] = useState<XY>();
+  const [target, setTarget] = useState<XY>();
+
+  function add(x: number, y: number) {
+    if (onAdd && drag === undefined) onAdd(x, y);
+  }
+
+  function select(i: number) {
+    if (onSelect) onSelect(i);
+  }
+
+  function over(x: number, y: number) {
+    setTarget([x, y]);
+  }
+
+  function startDrag(i: number) {
+    const u = plan.units[i];
+    setDrag(i);
+    setSource([u.x, u.y]);
+  }
+
+  function endDrag(x: number, y: number) {
+    if (drag !== undefined && onMove) {
+      onMove(drag, x, y);
+      setDrag(undefined);
+      setSource(undefined);
+    }
+  }
 
   return (
     <svg
@@ -307,7 +397,9 @@ export function MapView({
               y={size * y}
               width={size}
               height={size}
-              onClick={() => onAdd(x, y)}
+              onClick={() => add(x, y)}
+              onMouseOver={() => over(x, y)}
+              onMouseUp={() => endDrag(x, y)}
             />
           ))
         )}
@@ -328,12 +420,17 @@ export function MapView({
       {plan.units.map((u, i) => (
         <MapUnit
           key={"u" + i}
-          onClick={() => onSelect(i)}
+          onClick={() => select(i)}
+          onMouseDown={() => startDrag(i)}
+          onMouseUp={() => endDrag(u.x, u.y)}
           plan={plan}
           selected={selected === i}
           unit={u}
         />
       ))}
+      {source && target && (
+        <MeasureLine scale={5} size={size} source={source} target={target} />
+      )}
     </svg>
   );
 }

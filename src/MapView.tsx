@@ -424,7 +424,10 @@ export function MapView({
           </text>
         ))}
       </g>
-      <g stroke="grey" fill="white">
+      {plan.bg && (
+        <image xlinkHref={plan.bg} x={plan.bgx || 0} y={plan.bgy || 0} />
+      )}
+      <g stroke="grey" fill="transparent">
         {en(plan.width).map((x) =>
           en(plan.height).map((y) => (
             <rect

@@ -34,6 +34,11 @@ const MapPanel: FC<Props> = ({ patchPlan, plan, shiftUnits, show }) => {
             value={plan.height}
             onChange={(height) => patchPlan({ height: height || 1 })}
           />
+          <TableTextInput
+            label="BG"
+            value={plan.bg || ""}
+            onChange={(bg) => patchPlan({ bg })}
+          />
         </tbody>
       </table>
       <div className="ButtonBox">

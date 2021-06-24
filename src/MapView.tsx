@@ -58,11 +58,11 @@ function MapUnit({
       onMouseOver={() => setHover(true)}
       onMouseOut={() => setHover(false)}
     >
-      <circle cx={x} cy={y} r={ssize - 2} fill={cvalue} />
+      <circle cx={x} cy={y} r={ssize} fill={cvalue} />
       <circle
         cx={x}
         cy={y}
-        r={ssize - 2}
+        r={ssize}
         stroke={cvalue}
         strokeWidth={hover || selected ? 4 : 1}
         fill={`url(#img${u.label})`}
@@ -80,7 +80,7 @@ function MapUnit({
       <circle
         cx={x}
         cy={y}
-        r={ssize - 2}
+        r={ssize}
         stroke="black"
         strokeWidth={hover || selected ? 4 : 1}
         fill={cvalue}
@@ -92,7 +92,7 @@ function MapUnit({
         <circle
           cx={x}
           cy={y}
-          r={ssize - 3}
+          r={ssize - 1}
           stroke="white"
           fill="transparent"
           onClick={click}

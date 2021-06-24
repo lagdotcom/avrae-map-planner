@@ -4,12 +4,18 @@ import "./LagVTT.scss";
 import { AppState } from "./store";
 import { connect, ConnectedProps } from "react-redux";
 import useGlobalKeyDown from "./useGlobalKeyDown";
-import { closeAllPanels, openMapPanel, openUnitPanel } from "./store/ui";
+import {
+  closeAllPanels,
+  openLoadPanel,
+  openMapPanel,
+  openUnitPanel,
+} from "./store/ui";
 import { addUnit, moveUnit } from "./store/plan";
 import MapPanel from "./MapPanel";
 import UnitPanel from "./UnitPanel";
 import { getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
+import LoadPanel from "./LoadPanel";
 
 const mapStateToProps = (state: AppState) => ({
   images: state.db.images,
@@ -20,6 +26,7 @@ const mapDispatchToProps = {
   addUnit,
   closeAllPanels,
   moveUnit,
+  openLoadPanel,
   openMapPanel,
   openUnitPanel,
 };
@@ -31,6 +38,7 @@ const LagVTT: FC<Props> = ({
   closeAllPanels,
   images,
   moveUnit,
+  openLoadPanel,
   openMapPanel,
   openUnitPanel,
   plan,
@@ -50,6 +58,7 @@ const LagVTT: FC<Props> = ({
   }
 
   // TODO: make these not interrupt typing
+  useGlobalKeyDown(() => openLoadPanel(), ["shift+L"]);
   useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
   useGlobalKeyDown(() => {
     addUnit({ label: "", type: "", x: 0, y: 0, size: "M", initiative: 0 });
@@ -75,6 +84,7 @@ const LagVTT: FC<Props> = ({
         plan={plan}
         selected={selected}
       />
+      <LoadPanel />
       <MapPanel />
       <UnitPanel />
     </div>

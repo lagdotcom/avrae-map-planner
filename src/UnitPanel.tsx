@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { Colours, Sizes, Unit } from "./BattlePlan";
+import { Colours, Sizes, Unit, UnitMinusXY } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
 import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
@@ -22,7 +22,7 @@ function ActualUnitPanel({
   u,
   width,
 }: {
-  db: Record<string, Unit>;
+  db: Record<string, UnitMinusXY>;
   height: number;
   i: number;
   patch: (u: Partial<Unit>) => void;
@@ -63,10 +63,8 @@ function ActualUnitPanel({
   useGlobalKeyDown(() => remove(), ["Delete"]);
 
   function updateLabel(label: string) {
-    if (db[label]) {
-      const { x, y, ...rest } = db[label];
-      patch(rest);
-    } else patch({ label });
+    if (db[label]) patch(db[label]);
+    else patch({ label });
   }
 
   return (

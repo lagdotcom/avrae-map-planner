@@ -28,6 +28,7 @@ export interface Unit {
   token?: string;
   noface?: boolean;
 }
+export type UnitMinusXY = Omit<Unit, "x" | "y">;
 
 export const DoorTypes = {
   o: "open",

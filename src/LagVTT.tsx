@@ -4,17 +4,38 @@ import "./LagVTT.scss";
 import { AppState } from "./store";
 import { connect, ConnectedProps } from "react-redux";
 import useGlobalKeyDown from "./useGlobalKeyDown";
-import { openUnitPanel } from "./store/ui";
-import { moveUnit } from "./store/plan";
+import { closeAllPanels, openMapPanel, openUnitPanel } from "./store/ui";
+import { addUnit, moveUnit } from "./store/plan";
+import MapPanel from "./MapPanel";
+import UnitPanel from "./UnitPanel";
+import { getCurrentUnitIndex } from "./store/selectors";
 
-const mapStateToProps = (state: AppState) => ({ plan: state.plan });
-const mapDispatchToProps = { moveUnit, openUnitPanel };
+const mapStateToProps = (state: AppState) => ({
+  plan: state.plan,
+  selected: getCurrentUnitIndex(state),
+});
+const mapDispatchToProps = {
+  addUnit,
+  closeAllPanels,
+  moveUnit,
+  openMapPanel,
+  openUnitPanel,
+};
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const LagVTT: FC<Props> = ({ moveUnit, openUnitPanel, plan }) => {
-  function onAdd() {
-    console.log("todo", "onAdd");
+const LagVTT: FC<Props> = ({
+  addUnit,
+  closeAllPanels,
+  moveUnit,
+  openMapPanel,
+  openUnitPanel,
+  plan,
+  selected,
+}) => {
+  function onAdd(x: number, y: number) {
+    addUnit({ label: "???", type: "", x, y, size: "M" });
+    openUnitPanel(plan.units.length);
   }
 
   function onMove(i: number, x: number, y: number) {
@@ -25,11 +46,24 @@ const LagVTT: FC<Props> = ({ moveUnit, openUnitPanel, plan }) => {
     openUnitPanel(index);
   }
 
-  useGlobalKeyDown(() => openUnitPanel(), ["u"]);
+  useGlobalKeyDown(() => openMapPanel(), ["m"]);
+  useGlobalKeyDown(() => {
+    addUnit({ label: "???", type: "", x: 0, y: 0, size: "M" });
+    openUnitPanel(plan.units.length);
+  }, ["u"]);
+  useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);
 
   return (
     <div className="LagVTT">
-      <MapView plan={plan} onAdd={onAdd} onMove={onMove} onSelect={onSelect} />
+      <MapView
+        onAdd={onAdd}
+        onMove={onMove}
+        onSelect={onSelect}
+        plan={plan}
+        selected={selected}
+      />
+      <MapPanel />
+      <UnitPanel />
     </div>
   );
 };

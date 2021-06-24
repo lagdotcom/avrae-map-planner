@@ -1,0 +1,42 @@
+import classnames from "classnames";
+import React, { FC } from "react";
+import { connect, ConnectedProps } from "react-redux";
+import TableNumberInput from "./inputs/TableNumberInput";
+import TableTextInput from "./inputs/TableTextInput";
+import { AppState } from "./store";
+import { patchPlan } from "./store/plan";
+
+const mapStateToProps = (state: AppState) => ({
+  plan: state.plan,
+  show: state.ui.mapPanel,
+});
+const mapDispatchToProps = { patchPlan };
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>;
+
+const MapPanel: FC<Props> = ({ patchPlan, plan, show }) => {
+  return (
+    <div className={classnames("MapPanel", "Flyout", { show })}>
+      <table>
+        <tbody>
+          <TableTextInput
+            label="Name"
+            value={plan.name}
+            onChange={(name) => patchPlan({ name })}
+          />
+          <TableNumberInput
+            label="Width"
+            value={plan.width}
+            onChange={(width) => patchPlan({ width: width || 1 })}
+          />
+          <TableNumberInput
+            label="Height"
+            value={plan.height}
+            onChange={(height) => patchPlan({ height: height || 1 })}
+          />
+        </tbody>
+      </table>
+    </div>
+  );
+};
+export default connector(MapPanel);

@@ -2,7 +2,6 @@ import React, { FC, useEffect, useRef } from "react";
 import { connect, ConnectedProps } from "react-redux";
 import { Colours, Sizes, Unit, UnitMinusXY } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
-import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
 import { AppState } from "./store";
 import { removeUnit } from "./store/actions";
@@ -88,26 +87,11 @@ function UnitPanel({
     <div className="UnitPanel Flyout show">
       <table>
         <tbody>
-          <TableNumberInput
-            label="X"
-            value={u.x}
-            onChange={(x) => patch({ x })}
-          />
-          <TableNumberInput
-            label="Y"
-            value={u.y}
-            onChange={(y) => patch({ y })}
-          />
           <TableTextInput
             label="Label"
             forwardRef={labelRef}
             value={u.label}
             onChange={updateLabel}
-          />
-          <TableTextInput
-            label="Type"
-            value={u.type}
-            onChange={(type) => patch({ type })}
           />
           <TableEnumInput
             label="Colour"

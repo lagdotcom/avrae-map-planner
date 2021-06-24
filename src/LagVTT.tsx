@@ -37,7 +37,7 @@ const LagVTT: FC<Props> = ({
   selected,
 }) => {
   function onAdd(x: number, y: number) {
-    addUnit({ label: "???", type: "", x, y, size: "M" });
+    addUnit({ label: "", type: "", x, y, size: "M", initiative: 0 });
     openUnitPanel(plan.units.length);
   }
 
@@ -52,7 +52,7 @@ const LagVTT: FC<Props> = ({
   // TODO: make these not interrupt typing
   useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
   useGlobalKeyDown(() => {
-    addUnit({ label: "???", type: "", x: 0, y: 0, size: "M" });
+    addUnit({ label: "", type: "", x: 0, y: 0, size: "M", initiative: 0 });
     openUnitPanel(plan.units.length);
   }, ["shift+U"]);
   useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);

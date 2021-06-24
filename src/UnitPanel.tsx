@@ -81,12 +81,7 @@ function UnitPanel({
 
   useEffect(() => {
     const label = labelRef.current;
-
-    if (label) {
-      label.selectionStart = 0;
-      label.selectionEnd = u.label.length;
-      label.focus();
-    }
+    if (label) label.focus();
   }, [i, labelRef.current]);
 
   return (

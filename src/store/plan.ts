@@ -1,33 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import BattlePlan, { Unit } from "../BattlePlan";
 import { mod, XY } from "../tools";
+import VTTPlan from "../VTTPlan";
+import VTTUnit from "../VTTUnit";
 
-const initialState: BattlePlan = {
+const initialState: VTTPlan = {
   name: "name",
   width: 5,
   height: 5,
   zoom: 1,
-  units: [
-    {
-      label: "test",
-      type: "",
-      x: 3,
-      y: 3,
-      size: "M",
-    },
-  ],
+  units: [],
   walls: [],
   loads: [],
 };
 
 type MoveUnitPayload = { i: number; x: number; y: number };
-type PatchUnitPayload = { i: number; patch: Partial<Unit> };
+type PatchUnitPayload = { i: number; patch: Partial<VTTUnit> };
 
 const slice = createSlice({
   name: "plan",
   initialState,
   reducers: {
-    addUnit(state, { payload }: PayloadAction<Unit>) {
+    addUnit(state, { payload }: PayloadAction<VTTUnit>) {
       state.units.push(payload);
     },
 
@@ -36,7 +29,7 @@ const slice = createSlice({
       state.units[i].y = y;
     },
 
-    patchPlan(state, { payload }: PayloadAction<Partial<BattlePlan>>) {
+    patchPlan(state, { payload }: PayloadAction<Partial<VTTPlan>>) {
       return { ...state, ...payload };
     },
 

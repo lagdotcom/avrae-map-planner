@@ -390,6 +390,7 @@ export function MapView({
         {images &&
           Object.entries(images).map(([name, url]) => (
             <pattern
+              key={"img" + name}
               id={"img" + name}
               width="100%"
               height="100%"

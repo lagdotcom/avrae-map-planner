@@ -47,11 +47,11 @@ const LagVTT: FC<Props> = ({
   }
 
   // TODO: make these not interrupt typing
-  useGlobalKeyDown(() => openMapPanel(), ["m"]);
+  useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
   useGlobalKeyDown(() => {
     addUnit({ label: "???", type: "", x: 0, y: 0, size: "M" });
     openUnitPanel(plan.units.length);
-  }, ["u"]);
+  }, ["shift+U"]);
   useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);
 
   return (

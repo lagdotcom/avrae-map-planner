@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Unit, UnitMinusXY } from "../BattlePlan";
 import { pload, psave } from "../persistence";
+import VTTUnit, { PersistentVTTUnit } from "../VTTUnit";
 
 interface DBState {
   images: Record<string, string>;
-  units: Record<string, UnitMinusXY>;
+  units: Record<string, PersistentVTTUnit>;
 }
 
 const initialState: DBState = {
@@ -12,10 +12,10 @@ const initialState: DBState = {
   units: pload("units") || {},
 };
 
-function getUnitMinusXY(u: Unit | UnitMinusXY): UnitMinusXY {
+function getPersistentUnit(u: VTTUnit | PersistentVTTUnit): PersistentVTTUnit {
   if ("x" in u) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { x, y, ...data } = u;
+    const { x, y, initiative, ...data } = u;
     return data;
   }
 
@@ -33,8 +33,8 @@ const slice = createSlice({
       psave("images", state.images);
     },
 
-    saveUnit(state, { payload }: PayloadAction<Unit | UnitMinusXY>) {
-      state.units[payload.label] = getUnitMinusXY(payload);
+    saveUnit(state, { payload }: PayloadAction<VTTUnit | PersistentVTTUnit>) {
+      state.units[payload.label] = getPersistentUnit(payload);
       psave("units", state.units);
     },
   },

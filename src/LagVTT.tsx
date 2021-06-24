@@ -9,6 +9,7 @@ import {
   openLoadPanel,
   openMapPanel,
   openUnitPanel,
+  toggleInitPanel,
 } from "./store/ui";
 import { addUnit, moveUnit } from "./store/plan";
 import MapPanel from "./MapPanel";
@@ -16,6 +17,7 @@ import UnitPanel from "./UnitPanel";
 import { getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
 import LoadPanel from "./LoadPanel";
+import InitPanel from "./InitPanel";
 
 const mapStateToProps = (state: AppState) => ({
   images: state.db.images,
@@ -29,6 +31,7 @@ const mapDispatchToProps = {
   openLoadPanel,
   openMapPanel,
   openUnitPanel,
+  toggleInitPanel,
 };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
@@ -43,6 +46,7 @@ const LagVTT: FC<Props> = ({
   openUnitPanel,
   plan,
   selected,
+  toggleInitPanel,
 }) => {
   function onAdd(x: number, y: number) {
     addUnit({ label: "", type: "", x, y, size: "M", initiative: 0 });
@@ -58,6 +62,7 @@ const LagVTT: FC<Props> = ({
   }
 
   // TODO: make these not interrupt typing
+  useGlobalKeyDown(() => toggleInitPanel(), ["shift+I"]);
   useGlobalKeyDown(() => openLoadPanel(), ["shift+L"]);
   useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
   useGlobalKeyDown(() => {
@@ -84,6 +89,7 @@ const LagVTT: FC<Props> = ({
         plan={plan}
         selected={selected}
       />
+      <InitPanel />
       <LoadPanel />
       <MapPanel />
       <UnitPanel />

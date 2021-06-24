@@ -1,7 +1,8 @@
 import React, { FC, useEffect, useRef } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import { Colours, Sizes, Unit, UnitMinusXY } from "./BattlePlan";
+import { Colours, Sizes } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
+import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
 import { AppState } from "./store";
 import { removeUnit } from "./store/actions";
@@ -10,6 +11,7 @@ import { patchUnit } from "./store/plan";
 import { getCurrentUnit, getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
 import useGlobalKeyDown from "./useGlobalKeyDown";
+import VTTUnit, { PersistentVTTUnit } from "./VTTUnit";
 
 function UnitPanel({
   height,
@@ -26,12 +28,12 @@ function UnitPanel({
   height: number;
   i: number;
   images: Record<string, string>;
-  patch: (u: Partial<Unit>) => void;
+  patch: (u: Partial<VTTUnit>) => void;
   remove: () => void;
   save: () => void;
   saveImg: (url: string) => void;
-  u: Unit;
-  units: Record<string, UnitMinusXY>;
+  u: VTTUnit;
+  units: Record<string, PersistentVTTUnit>;
   width: number;
 }) {
   const labelRef = useRef<HTMLInputElement>(null);
@@ -93,6 +95,11 @@ function UnitPanel({
             value={u.label}
             onChange={updateLabel}
           />
+          <TableNumberInput
+            label="Init."
+            value={u.initiative}
+            onChange={(initiative) => patch({ initiative })}
+          />
           <TableEnumInput
             label="Colour"
             value={u.colour}
@@ -140,7 +147,7 @@ const UnitPanelWrapper: FC<Props> = ({
   u,
   units,
 }) => {
-  function patch(patch: Partial<Unit>) {
+  function patch(patch: Partial<VTTUnit>) {
     if (i !== undefined) patchUnit({ i, patch });
   }
 

@@ -1,10 +1,10 @@
 import { createSelector } from "reselect";
 import { AppState } from ".";
-import { Unit } from "../BattlePlan";
+import VTTUnit from "../VTTUnit";
 
 export const getCurrentUnitIndex = (state: AppState): number | undefined =>
   state.ui.unitPanel;
-export const getPlanUnits = (state: AppState): Unit[] => state.plan.units;
+export const getPlanUnits = (state: AppState): VTTUnit[] => state.plan.units;
 
 export const getCurrentUnit = createSelector(
   [getCurrentUnitIndex, getPlanUnits],

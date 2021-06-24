@@ -34,4 +34,13 @@
       }
     }
   }
+
+  .InitPanel {
+    top: unset;
+    bottom: 0px;
+
+    .Initiative {
+      font-weight: bold;
+    }
+  }
 }

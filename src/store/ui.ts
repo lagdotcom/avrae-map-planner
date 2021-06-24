@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UIState {
+  initPanel: boolean;
   loadPanel: boolean;
   mapPanel: boolean;
   unitPanel?: number;
 }
 
 const initialState: UIState = {
+  initPanel: false,
   loadPanel: false,
   mapPanel: false,
   unitPanel: undefined,
@@ -39,9 +41,18 @@ const slice = createSlice({
       state.mapPanel = false;
       state.unitPanel = payload;
     },
+
+    toggleInitPanel(state) {
+      state.initPanel = !state.initPanel;
+    },
   },
 });
 
-export const { closeAllPanels, openLoadPanel, openMapPanel, openUnitPanel } =
-  slice.actions;
+export const {
+  closeAllPanels,
+  openLoadPanel,
+  openMapPanel,
+  openUnitPanel,
+  toggleInitPanel,
+} = slice.actions;
 export default slice.reducer;

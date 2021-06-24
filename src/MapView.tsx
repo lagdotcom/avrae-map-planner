@@ -6,7 +6,7 @@ import BattlePlan, {
   Unit,
   Wall,
 } from "./BattlePlan";
-import { columnLabel, en, lerp } from "./tools";
+import { columnLabel, en, lerp, XY } from "./tools";
 
 const sizeLookup: { [size: string]: number } = {
   T: 0.3,
@@ -266,8 +266,6 @@ function MapLine({ plan, wall }: { plan: BattlePlan; wall: Wall }) {
       return <MapWall plan={plan} wall={wall} />;
   }
 }
-
-type XY = [x: number, y: number];
 
 function MeasureLine({
   scale,

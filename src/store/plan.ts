@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import BattlePlan, { Unit } from "../BattlePlan";
+import { mod, XY } from "../tools";
 
 const initialState: BattlePlan = {
   name: "name",
@@ -46,12 +47,26 @@ const slice = createSlice({
       state.units[i] = { ...state.units[i], ...patch };
     },
 
+    shiftUnits(state, { payload: [x, y] }: PayloadAction<XY>) {
+      for (let i = 0; i < state.units.length; i++) {
+        const u = state.units[i];
+        u.x = mod(u.x + x, state.width);
+        u.y = mod(u.y + y, state.height);
+      }
+    },
+
     spliceUnit(state, { payload }: PayloadAction<number>) {
       state.units.splice(payload, 1);
     },
   },
 });
 
-export const { addUnit, moveUnit, patchPlan, patchUnit, spliceUnit } =
-  slice.actions;
+export const {
+  addUnit,
+  moveUnit,
+  patchPlan,
+  patchUnit,
+  shiftUnits,
+  spliceUnit,
+} = slice.actions;
 export default slice.reducer;

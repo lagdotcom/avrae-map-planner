@@ -23,5 +23,15 @@
     &.show {
       display: block;
     }
+
+    .ButtonBox {
+      button {
+        padding: 5px 10px;
+      }
+
+      button + button {
+        margin-left: 10px;
+      }
+    }
   }
 }

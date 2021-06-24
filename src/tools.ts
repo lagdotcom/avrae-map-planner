@@ -1,6 +1,7 @@
 import BattlePlan, { ColourName, DoorType, Unit, Wall } from "./BattlePlan";
 
 type StringDict = Record<string, string>;
+export type XY = [x: number, y: number];
 
 export function en(count: number): number[] {
   return Array.from(Array(count).keys());
@@ -316,7 +317,7 @@ export function lerp(a: number, b: number, r: number): number {
   return a * (1 - r) + b * r;
 }
 
-export function mod(n:number, x:number): number {
+export function mod(n: number, x: number): number {
   while (n < 0) n += x;
   return n % x;
 }

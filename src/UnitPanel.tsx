@@ -133,11 +133,7 @@ function UnitPanel({
       <div className="ButtonBox">
         <button onClick={save}>Save</button>
         <button onClick={remove}>Remove</button>
-      </div>
-
-      <div className="ImageStuff">
-        {img ? <img src={images[u.label]} /> : <span>No Image</span>}
-        <button onClick={setImage}>Change</button>
+        <button onClick={setImage}>Image...</button>
       </div>
     </div>
   );

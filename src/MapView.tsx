@@ -20,6 +20,7 @@ function MapUnit({
   onClick,
   onMouseDown,
   onMouseUp,
+  image,
   plan,
   selected,
   unit: u,
@@ -27,6 +28,7 @@ function MapUnit({
   onClick?: (x: number, y: number) => void;
   onMouseDown?: () => void;
   onMouseUp?: () => void;
+  image?: string;
   plan: BattlePlan;
   selected: boolean;
   unit: Unit;
@@ -35,6 +37,7 @@ function MapUnit({
 
   const size = plan.gridsize || 40;
   const colour = u.colour || "r";
+  const cvalue = ColourValues[colour];
   const scale = sizeLookup[u.size];
   const ssize = scale * size;
   const x = (u.x + Math.max(scale, 0.5)) * size;
@@ -49,7 +52,26 @@ function MapUnit({
     if (onMouseUp) onMouseUp();
   };
 
-  return (
+  return image ? (
+    <g
+      className="unit"
+      onMouseOver={() => setHover(true)}
+      onMouseOut={() => setHover(false)}
+    >
+      <circle cx={x} cy={y} r={ssize - 2} fill={cvalue} />
+      <circle
+        cx={x}
+        cy={y}
+        r={ssize - 2}
+        stroke={cvalue}
+        strokeWidth={hover || selected ? 4 : 1}
+        fill={`url(#img${u.label})`}
+        onClick={click}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
+      />
+    </g>
+  ) : (
     <g
       className="unit"
       onMouseOver={() => setHover(true)}
@@ -61,7 +83,7 @@ function MapUnit({
         r={ssize - 2}
         stroke="black"
         strokeWidth={hover || selected ? 4 : 1}
-        fill={ColourValues[colour]}
+        fill={cvalue}
         onClick={click}
         onMouseDown={mouseDown}
         onMouseUp={mouseUp}
@@ -311,12 +333,14 @@ export function MapView({
   onAdd,
   onMove,
   onSelect,
+  images,
   plan,
   selected,
 }: {
   onAdd?: (x: number, y: number) => void;
   onMove?: (i: number, x: number, y: number) => void;
   onSelect?: (i: number) => void;
+  images?: Record<string, string>;
   plan: BattlePlan;
   selected?: number;
 }): JSX.Element {
@@ -362,6 +386,19 @@ export function MapView({
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`${-size} ${-size} ${padx} ${pady}`}
     >
+      <defs>
+        {images &&
+          Object.entries(images).map(([name, url]) => (
+            <pattern
+              id={"img" + name}
+              width="100%"
+              height="100%"
+              patternContentUnits="objectBoundingBox"
+            >
+              <image width={1} height={1} xlinkHref={url} />
+            </pattern>
+          ))}
+      </defs>
       <g>
         {en(plan.width).map((x) => (
           <text
@@ -424,6 +461,7 @@ export function MapView({
           plan={plan}
           selected={selected === i}
           unit={u}
+          image={images && images[u.label]}
         />
       ))}
       {source && target && (

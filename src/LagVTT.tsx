@@ -11,6 +11,7 @@ import UnitPanel from "./UnitPanel";
 import { getCurrentUnitIndex } from "./store/selectors";
 
 const mapStateToProps = (state: AppState) => ({
+  images: state.db.images,
   plan: state.plan,
   selected: getCurrentUnitIndex(state),
 });
@@ -27,6 +28,7 @@ type Props = ConnectedProps<typeof connector>;
 const LagVTT: FC<Props> = ({
   addUnit,
   closeAllPanels,
+  images,
   moveUnit,
   openMapPanel,
   openUnitPanel,
@@ -60,6 +62,7 @@ const LagVTT: FC<Props> = ({
         onAdd={onAdd}
         onMove={onMove}
         onSelect={onSelect}
+        images={images}
         plan={plan}
         selected={selected}
       />

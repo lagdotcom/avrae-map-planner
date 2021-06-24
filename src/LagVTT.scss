@@ -34,23 +34,4 @@
       }
     }
   }
-
-  .UnitPanel {
-    .ImageStuff {
-      position: relative;
-      width: 100px;
-      height: 100px;
-
-      img {
-        width: 100%;
-      }
-
-      button {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        opacity: 0.8;
-      }
-    }
-  }
 }

@@ -3,10 +3,11 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import MapPlanner from "./MapPlanner";
+import LagVTT from "./LagVTT";
 
 ReactDOM.render(
   <React.StrictMode>
-    <MapPlanner />
+    {window.location.hash === "#vtt" ? <LagVTT /> : <MapPlanner />}
   </React.StrictMode>,
   document.getElementById("root")
 );

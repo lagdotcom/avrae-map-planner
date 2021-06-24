@@ -77,7 +77,7 @@ function UnitPanel({
       label.selectionEnd = u.label.length;
       label.focus();
     }
-  }, [labelRef.current]);
+  }, [i, labelRef.current]);
 
   return (
     <div className="UnitPanel Flyout show">

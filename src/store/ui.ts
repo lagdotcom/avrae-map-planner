@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UIState {
+  currentUnit: number;
   initPanel: boolean;
   loadPanel: boolean;
   mapPanel: boolean;
@@ -8,6 +9,7 @@ interface UIState {
 }
 
 const initialState: UIState = {
+  currentUnit: 0,
   initPanel: false,
   loadPanel: false,
   mapPanel: false,
@@ -42,6 +44,10 @@ const slice = createSlice({
       state.unitPanel = payload;
     },
 
+    setCurrentUnit(state, { payload }: PayloadAction<number>) {
+      state.currentUnit = payload;
+    },
+
     toggleInitPanel(state) {
       state.initPanel = !state.initPanel;
     },
@@ -53,6 +59,7 @@ export const {
   openLoadPanel,
   openMapPanel,
   openUnitPanel,
+  setCurrentUnit,
   toggleInitPanel,
 } = slice.actions;
 export default slice.reducer;

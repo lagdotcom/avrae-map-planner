@@ -10,14 +10,14 @@ function keyName(e: KeyboardEvent) {
 }
 
 function useGlobalKeyDown(
-  callback: (e: KeyboardEvent) => void,
+  callback: (e: KeyboardEvent) => unknown,
   listen: string[],
   disabled?: boolean
 ): void {
   const handleKeyDown = (e: KeyboardEvent) => {
     const key = keyName(e);
     if (!listen.includes(key)) return;
-    callback(e);
+    if (callback(e) !== false) e.stopPropagation();
   };
 
   useEffect(() => {

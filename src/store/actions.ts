@@ -1,6 +1,6 @@
 import { AppThunk } from ".";
 import { spliceUnit } from "./plan";
-import { closeAllPanels } from "./ui";
+import { closeAllPanels, setCurrentUnit } from "./ui";
 
 export const removeUnit =
   (i: number): AppThunk =>
@@ -12,4 +12,7 @@ export const removeUnit =
 
     if (state.ui.unitPanel !== undefined && state.ui.unitPanel >= max)
       dispatch(closeAllPanels());
+
+    if (state.ui.currentUnit >= i)
+      dispatch(setCurrentUnit(state.ui.currentUnit - 1));
   };

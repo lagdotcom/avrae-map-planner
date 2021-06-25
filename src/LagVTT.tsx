@@ -65,10 +65,6 @@ const LagVTT: FC<Props> = ({
   useGlobalKeyDown(() => toggleInitPanel(), ["shift+I"]);
   useGlobalKeyDown(() => openLoadPanel(), ["shift+L"]);
   useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
-  useGlobalKeyDown(() => {
-    addUnit({ label: "", type: "", x: 0, y: 0, size: "M", initiative: 0 });
-    openUnitPanel(plan.units.length);
-  }, ["shift+U"]);
   useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);
   useGlobalKeyDown(
     () => openUnitPanel(mod((selected ?? 0) + 1, plan.units.length)),

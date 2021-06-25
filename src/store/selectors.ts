@@ -10,3 +10,8 @@ export const getCurrentUnit = createSelector(
   [getCurrentUnitIndex, getPlanUnits],
   (i, units) => (i === undefined ? undefined : units[i])
 );
+
+export const getUnitsInInitiativeOrder = createSelector(
+  [getPlanUnits],
+  (units) => units.slice().sort((a, b) => b.initiative - a.initiative)
+);

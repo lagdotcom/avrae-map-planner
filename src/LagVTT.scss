@@ -41,6 +41,19 @@
 
     .Initiative {
       font-weight: bold;
+      text-align: right;
+      padding-right: 5px;
+    }
+
+    table {
+      border-spacing: 0;
+
+      .UnitLine {
+        cursor: pointer;
+        &.current {
+          background: yellow;
+        }
+      }
     }
   }
 }

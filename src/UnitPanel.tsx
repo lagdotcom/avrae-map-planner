@@ -40,31 +40,16 @@ function UnitPanel({
   const img = images[u.label];
 
   useGlobalKeyDown(
-    (e) => {
-      patch({ x: mod(u.x - 1, width) });
-      e.stopPropagation();
-    },
+    () => patch({ x: mod(u.x - 1, width) }),
     ["shift+ArrowLeft"]
   );
+  useGlobalKeyDown(() => patch({ y: mod(u.y - 1, height) }), ["shift+ArrowUp"]);
   useGlobalKeyDown(
-    (e) => {
-      patch({ y: mod(u.y - 1, height) });
-      e.stopPropagation();
-    },
-    ["shift+ArrowUp"]
-  );
-  useGlobalKeyDown(
-    (e) => {
-      patch({ x: mod(u.x + 1, width) });
-      e.stopPropagation();
-    },
+    () => patch({ x: mod(u.x + 1, width) }),
     ["shift+ArrowRight"]
   );
   useGlobalKeyDown(
-    (e) => {
-      patch({ y: mod(u.y + 1, height) });
-      e.stopPropagation();
-    },
+    () => patch({ y: mod(u.y + 1, height) }),
     ["shift+ArrowDown"]
   );
 

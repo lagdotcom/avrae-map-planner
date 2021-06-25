@@ -1,12 +1,18 @@
 import React, { useState } from "react";
-
+import tinycolor2 from "tinycolor2";
 import BattlePlan, {
+  CircleOverlay,
+  ColourName,
   ColourValues,
+  ConeOverlay,
   LightColours,
+  LineOverlay,
+  Overlay,
+  SquareOverlay,
   Unit,
   Wall,
 } from "./BattlePlan";
-import { columnLabel, en, lerp, XY } from "./tools";
+import { columnLabel, deg, en, lerp, XY } from "./tools";
 
 const sizeLookup: { [size: string]: number } = {
   T: 0.3,
@@ -329,6 +335,152 @@ function MeasureLine({
   ) : null;
 }
 
+function getColourPair(c?: ColourName) {
+  const solid = ColourValues[c || "r"];
+  const fade = tinycolor2(solid).setAlpha(0.5).toHex8String();
+
+  return [solid, fade];
+}
+
+type OverlayArgs<T> = { nscale(n: number): number; o: T; size: number };
+
+function MapCircleOverlay({ nscale, o, size }: OverlayArgs<CircleOverlay>) {
+  const [stroke, fill] = getColourPair(o.colour);
+  const h = size / 2;
+
+  const x1 = o.sx * size + h;
+  const y1 = o.sy * size + h;
+
+  return (
+    <circle
+      pointerEvents="none"
+      stroke={stroke}
+      fill={fill}
+      cx={x1}
+      cy={y1}
+      r={nscale(o.diameter)}
+    />
+  );
+}
+
+function MapConeOverlay({ nscale, o, size }: OverlayArgs<ConeOverlay>) {
+  const [stroke, fill] = getColourPair(o.colour);
+  const h = size / 2;
+
+  const sx = o.sx * size + h;
+  const sy = o.sy * size + h;
+  const ex = o.ex * size + h;
+  const ey = o.ey * size + h;
+  const angle = Math.atan2(ey - sy, ex - sx);
+  const length = nscale(o.length) / size;
+  const xm = Math.cos(angle);
+  const ym = Math.sin(angle);
+  const xmod = xm * h;
+  const ymod = ym * h;
+
+  const points = [
+    [0, 0],
+    [length, length / -2],
+    [length, length / 2],
+    [0, 0],
+  ]
+    .map(([x, y]) => `${sx + x * size},${sy + y * size}`)
+    .join(" ");
+
+  return (
+    <polyline
+      points={points}
+      pointerEvents="none"
+      stroke={stroke}
+      fill={fill}
+      transform={`rotate(${deg(angle)} ${sx + xmod} ${sy + ymod})`}
+    />
+  );
+}
+
+function MapLineOverlay({
+  nscale,
+  o,
+  size,
+}: OverlayArgs<LineOverlay | SquareOverlay>) {
+  const [stroke, fill] = getColourPair(o.colour);
+  const h = size / 2;
+
+  const x1 = o.sx * size + h;
+  const y1 = o.sy * size + h;
+  const x2 = o.ex * size + h;
+  const y2 = o.ey * size + h;
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const xmod = Math.cos(angle) * h;
+  const ymod = Math.sin(angle) * h;
+  const height = nscale(o.type === "line" ? o.width || 10 : o.size);
+
+  return (
+    <rect
+      pointerEvents="none"
+      stroke={stroke}
+      fill={fill}
+      x={x1 + xmod}
+      y={y1 + ymod - height / 2}
+      width={nscale(o.type === "line" ? o.length : o.size)}
+      height={height}
+      transform={`rotate(${deg(angle)} ${x1 + xmod} ${y1 + ymod})`}
+    />
+  );
+}
+
+function MapOverlay({
+  overlay: o,
+  scale,
+  size,
+}: {
+  overlay: Overlay;
+  scale: number;
+  size: number;
+}) {
+  const cvalue = ColourValues[o.colour || "r"];
+  const h = size / 2;
+
+  const x1 = o.sx * size + h;
+  const y1 = o.sy * size + h;
+  let x2 = 0;
+  let y2 = 0;
+
+  if ("ex" in o) {
+    x2 = o.ex * size + h;
+    y2 = o.ey * size + h;
+  }
+
+  function nscale(n: number) {
+    return (n * size) / scale;
+  }
+
+  switch (o.type) {
+    case "arrow":
+      // TODO
+      return (
+        <line
+          pointerEvents="none"
+          stroke={cvalue}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+        />
+      );
+
+    case "circle":
+      return <MapCircleOverlay nscale={nscale} o={o} size={size} />;
+
+    case "cone":
+      return <MapConeOverlay nscale={nscale} o={o} size={size} />;
+
+    case "line":
+    case "square":
+      return <MapLineOverlay nscale={nscale} o={o} size={size} />;
+  }
+}
+
 export function MapView({
   onAdd,
   onMove,
@@ -454,21 +606,34 @@ export function MapView({
         fill="transparent"
         pointerEvents="none"
       />
-      {plan.walls.map((w, i) => (
-        <MapLine key={"w" + i} plan={plan} wall={w} />
-      ))}
-      {plan.units.map((u, i) => (
-        <MapUnit
-          key={"u" + i}
-          onClick={() => select(i)}
-          onMouseDown={() => startDrag(i)}
-          onMouseUp={() => endDrag(u.x, u.y)}
-          plan={plan}
-          selected={selected === i}
-          unit={u}
-          image={images && images[u.label]}
-        />
-      ))}
+      {/* TODO: clip to battlefield */}
+      <g>
+        {plan.overlays
+          .filter((o) => o.under)
+          .map((o, i) => (
+            <MapOverlay key={`under${i}`} overlay={o} scale={5} size={size} />
+          ))}
+        {plan.walls.map((w, i) => (
+          <MapLine key={"w" + i} plan={plan} wall={w} />
+        ))}
+        {plan.units.map((u, i) => (
+          <MapUnit
+            key={"u" + i}
+            onClick={() => select(i)}
+            onMouseDown={() => startDrag(i)}
+            onMouseUp={() => endDrag(u.x, u.y)}
+            plan={plan}
+            selected={selected === i}
+            unit={u}
+            image={images && images[u.label]}
+          />
+        ))}
+        {plan.overlays
+          .filter((o) => !o.under)
+          .map((o, i) => (
+            <MapOverlay key={`over${i}`} overlay={o} scale={5} size={size} />
+          ))}
+      </g>
       {source && target && (
         <MeasureLine scale={5} size={size} source={source} target={target} />
       )}

@@ -11,6 +11,7 @@ const initialState: VTTPlan = {
   units: [],
   walls: [],
   loads: [],
+  overlays: [],
 };
 
 type MoveUnitPayload = { i: number; x: number; y: number };

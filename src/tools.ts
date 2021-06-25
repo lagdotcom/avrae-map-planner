@@ -244,6 +244,7 @@ export function convertFromUVar(s: string): BattlePlan {
     units: [],
     walls: [],
     loads: [],
+    overlays: [],
   };
   val[name].forEach((line) => {
     const { command, args, switches } = splitCommand(line);
@@ -305,6 +306,52 @@ export function getOTFBMUrl(plan: BattlePlan): string {
     }
   });
 
+  plan.overlays.forEach((o) => {
+    url += "/*";
+    if (o.under) url += "u";
+
+    switch (o.type) {
+      case "arrow":
+        url += "a";
+        if (o.colour) url += o.colour;
+        url += cell(o.sx, o.sy);
+        url += cell(o.ex, o.ey);
+        break;
+
+      case "circle":
+        url += "c";
+        if (o.topLeftAnchor) url += "t";
+        url += o.diameter.toString();
+        if (o.colour) url += o.colour;
+        url += cell(o.sx, o.sy);
+        break;
+
+      case "cone":
+        url += `t${o.length}`;
+        if (o.colour) url += o.colour;
+        url += cell(o.sx, o.sy);
+        url += cell(o.ex, o.ey);
+        break;
+
+      case "line":
+        url += `l${o.length}`;
+        if (o.width) url += `,${o.width}`;
+        if (o.colour) url += o.colour;
+        url += cell(o.sx, o.sy);
+        url += cell(o.ex, o.ey);
+        break;
+
+      case "square":
+        url += "s";
+        if (o.topLeftAnchor) url += "t";
+        url += o.size.toString();
+        if (o.colour) url += o.colour;
+        url += cell(o.sx, o.sy);
+        if (!o.topLeftAnchor) url += cell(o.ex, o.ey);
+        break;
+    }
+  });
+
   const queries: string[] = [];
   if (plan.bg) queries.push("bg=" + plan.bg);
   plan.loads.forEach((data) => queries.push("load=" + data));
@@ -320,4 +367,8 @@ export function lerp(a: number, b: number, r: number): number {
 export function mod(n: number, x: number): number {
   while (n < 0) n += x;
   return n % x;
+}
+
+export function deg(rad: number): number {
+  return (rad / (2 * Math.PI)) * 360;
 }

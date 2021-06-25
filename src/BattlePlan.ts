@@ -48,6 +48,63 @@ export interface Wall {
   door?: DoorType;
 }
 
+export interface ArrowOverlay {
+  type: "arrow";
+  under?: boolean;
+  colour?: ColourName;
+  sx: number;
+  sy: number;
+  ex: number;
+  ey: number;
+}
+export interface CircleOverlay {
+  type: "circle";
+  under?: boolean;
+  topLeftAnchor?: boolean;
+  diameter: number;
+  colour?: ColourName;
+  sx: number;
+  sy: number;
+}
+export interface ConeOverlay {
+  type: "cone";
+  under?: boolean;
+  length: number;
+  colour?: ColourName;
+  sx: number;
+  sy: number;
+  ex: number;
+  ey: number;
+}
+export interface LineOverlay {
+  type: "line";
+  under?: boolean;
+  length: number;
+  width?: number;
+  colour?: ColourName;
+  sx: number;
+  sy: number;
+  ex: number;
+  ey: number;
+}
+export interface SquareOverlay {
+  type: "square";
+  under?: boolean;
+  topLeftAnchor?: boolean;
+  size: number;
+  colour?: ColourName;
+  sx: number;
+  sy: number;
+  ex: number;
+  ey: number;
+}
+export type Overlay =
+  | ArrowOverlay
+  | CircleOverlay
+  | ConeOverlay
+  | LineOverlay
+  | SquareOverlay;
+
 export default interface BattlePlan {
   name: string;
   width: number;
@@ -62,4 +119,5 @@ export default interface BattlePlan {
   gridsize?: number;
   walls: Wall[];
   loads: string[];
+  overlays: Overlay[];
 }

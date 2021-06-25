@@ -5,6 +5,7 @@ interface UIState {
   initPanel: boolean;
   loadPanel: boolean;
   mapPanel: boolean;
+  overlayPanel?: number;
   unitPanel?: number;
 }
 
@@ -13,7 +14,6 @@ const initialState: UIState = {
   initPanel: false,
   loadPanel: false,
   mapPanel: false,
-  unitPanel: undefined,
 };
 
 const slice = createSlice({
@@ -23,24 +23,35 @@ const slice = createSlice({
     closeAllPanels(state) {
       state.loadPanel = false;
       state.mapPanel = false;
+      state.overlayPanel = undefined;
       state.unitPanel = undefined;
     },
 
     openLoadPanel(state) {
       state.loadPanel = true;
       state.mapPanel = false;
+      state.overlayPanel = undefined;
       state.unitPanel = undefined;
     },
 
     openMapPanel(state) {
       state.loadPanel = false;
       state.mapPanel = true;
+      state.overlayPanel = undefined;
+      state.unitPanel = undefined;
+    },
+
+    openOverlayPanel(state, { payload }: PayloadAction<number>) {
+      state.loadPanel = false;
+      state.mapPanel = false;
+      state.overlayPanel = payload;
       state.unitPanel = undefined;
     },
 
     openUnitPanel(state, { payload }: PayloadAction<number>) {
       state.loadPanel = false;
       state.mapPanel = false;
+      state.overlayPanel = undefined;
       state.unitPanel = payload;
     },
 
@@ -58,6 +69,7 @@ export const {
   closeAllPanels,
   openLoadPanel,
   openMapPanel,
+  openOverlayPanel,
   openUnitPanel,
   setCurrentUnit,
   toggleInitPanel,

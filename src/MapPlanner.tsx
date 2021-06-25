@@ -55,12 +55,12 @@ function MapSettings({
         <TableNumberInput
           label="Zoom"
           value={plan.zoom}
-          onChange={zoom => setPlan({ ...plan, zoom: zoom || 1 })}
+          onChange={(zoom) => setPlan({ ...plan, zoom: zoom || 1 })}
         />
         <TableNumberInput
           label="Grid Size"
           value={plan.gridsize || 40}
-          onChange={gridsize => setPlan({ ...plan, gridsize: gridsize || 1 })}
+          onChange={(gridsize) => setPlan({ ...plan, gridsize: gridsize || 1 })}
         />
         <TableTextInput
           label="BG"
@@ -337,6 +337,7 @@ export default function MapPlanner(): JSX.Element {
     units: [],
     walls: [],
     loads: [],
+    overlays: [],
   });
   const [solo, setSolo] = useState<boolean>(false);
 
@@ -365,10 +366,10 @@ export default function MapPlanner(): JSX.Element {
   function shift(mx: number, my: number) {
     function apply(u: Unit) {
       const { x, y } = u;
-      return { ...u, x: mod(x + mx, plan.width), y: mod(y + my, plan.height) }
+      return { ...u, x: mod(x + mx, plan.width), y: mod(y + my, plan.height) };
     }
 
-    setPlan({ ...plan, units: plan.units.map(apply) })
+    setPlan({ ...plan, units: plan.units.map(apply) });
   }
 
   function parse(s: string) {
@@ -377,7 +378,7 @@ export default function MapPlanner(): JSX.Element {
   }
 
   return (
-    <div className={`MapPlanner ${solo ? 'solo' : ''}`}>
+    <div className={`MapPlanner ${solo ? "solo" : ""}`}>
       <MapView
         onSelect={setSelected}
         onAdd={add}

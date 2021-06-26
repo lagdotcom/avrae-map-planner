@@ -1,4 +1,4 @@
-import { AppThunk } from ".";
+import { AppThunk } from "./";
 import { spliceUnit } from "./plan";
 import { closeAllPanels, setCurrentUnit } from "./ui";
 

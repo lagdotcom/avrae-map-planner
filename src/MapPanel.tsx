@@ -1,6 +1,7 @@
 import classnames from "classnames";
 import React, { FC } from "react";
 import { connect, ConnectedProps } from "react-redux";
+
 import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
 import { AppState } from "./store";

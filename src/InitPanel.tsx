@@ -1,10 +1,11 @@
+import classnames from "classnames";
 import React, { FC } from "react";
 import { connect, ConnectedProps } from "react-redux";
+
 import { AppState } from "./store";
-import classnames from "classnames";
+import { getUnitsInInitiativeOrder } from "./store/selectors";
 import { openUnitPanel, setCurrentUnit } from "./store/ui";
 import { mod } from "./tools";
-import { getUnitsInInitiativeOrder } from "./store/selectors";
 
 const mapStateToProps = (state: AppState) => ({
   current: state.ui.currentUnit,

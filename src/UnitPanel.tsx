@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useRef } from "react";
 import { connect, ConnectedProps } from "react-redux";
+
 import { Colours, Sizes } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
 import TableNumberInput from "./inputs/TableNumberInput";

@@ -1,11 +1,11 @@
-import React, { ChangeEvent, FC, useEffect } from "react";
-import { connect, ConnectedProps } from "react-redux";
-import { AppState } from "./store";
 import classnames from "classnames";
-import { convertFromUVar } from "./tools";
+import React, { ChangeEvent, FC, useEffect, useRef } from "react";
+import { connect, ConnectedProps } from "react-redux";
+
+import { AppState } from "./store";
 import { patchPlan } from "./store/plan";
 import { closeAllPanels } from "./store/ui";
-import { useRef } from "react";
+import { convertFromUVar } from "./tools";
 
 const mapStateToProps = (state: AppState) => ({
   show: state.ui.loadPanel,

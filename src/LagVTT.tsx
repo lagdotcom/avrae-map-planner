@@ -1,9 +1,15 @@
-import React, { FC } from "react";
-import { MapView } from "./MapView";
 import "./LagVTT.scss";
-import { AppState } from "./store";
+
+import React, { FC } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import useGlobalKeyDown from "./useGlobalKeyDown";
+
+import InitPanel from "./InitPanel";
+import LoadPanel from "./LoadPanel";
+import MapPanel from "./MapPanel";
+import { MapView } from "./MapView";
+import { AppState } from "./store";
+import { addUnit, moveUnit } from "./store/plan";
+import { getCurrentUnitIndex } from "./store/selectors";
 import {
   closeAllPanels,
   openLoadPanel,
@@ -11,13 +17,9 @@ import {
   openUnitPanel,
   toggleInitPanel,
 } from "./store/ui";
-import { addUnit, moveUnit } from "./store/plan";
-import MapPanel from "./MapPanel";
-import UnitPanel from "./UnitPanel";
-import { getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
-import LoadPanel from "./LoadPanel";
-import InitPanel from "./InitPanel";
+import UnitPanel from "./UnitPanel";
+import useGlobalKeyDown from "./useGlobalKeyDown";
 
 const mapStateToProps = (state: AppState) => ({
   images: state.db.images,

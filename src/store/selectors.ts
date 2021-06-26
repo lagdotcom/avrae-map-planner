@@ -1,6 +1,7 @@
 import { createSelector } from "reselect";
-import { AppState } from ".";
+
 import VTTUnit from "../VTTUnit";
+import { AppState } from "./";
 
 export const getCurrentUnitIndex = (state: AppState): number | undefined =>
   state.ui.unitPanel;

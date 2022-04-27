@@ -1,5 +1,3 @@
-import React from "react";
-
 import EnumInput from "./EnumInput";
 
 export default function TableEnumInput<T extends string>({

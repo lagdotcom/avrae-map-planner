@@ -1,5 +1,5 @@
 import classnames from "classnames";
-import React, { FC } from "react";
+import { useCallback } from "react";
 import { connect, ConnectedProps } from "react-redux";
 
 import { AppState } from "./store";
@@ -18,7 +18,7 @@ const mapDispatchToProps = { openUnitPanel, setCurrentUnit };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const InitPanel: FC<Props> = ({
+function InitPanel({
   current,
   openUnitPanel,
   plan,
@@ -26,16 +26,17 @@ const InitPanel: FC<Props> = ({
   show,
   showUnit,
   sortedUnits,
-}) => {
-  function select(i: number) {
-    openUnitPanel(plan.units.indexOf(sortedUnits[i]));
-  }
+}: Props) {
+  const select = useCallback(
+    (i: number) => () => openUnitPanel(plan.units.indexOf(sortedUnits[i])),
+    [openUnitPanel, plan.units, sortedUnits]
+  );
 
-  function next() {
+  const next = useCallback(() => {
     const i = mod(current + 1, plan.units.length);
     setCurrentUnit(i);
     if (showUnit !== undefined) select(i);
-  }
+  }, [current, plan.units.length, select, setCurrentUnit, showUnit]);
 
   return (
     <div className={classnames("Flyout", "InitPanel", { show })}>
@@ -44,7 +45,7 @@ const InitPanel: FC<Props> = ({
           {sortedUnits.map((u, i) => (
             <tr
               key={i}
-              onClick={() => select(i)}
+              onClick={select(i)}
               className={classnames("UnitLine", { current: i === current })}
             >
               <td className="Initiative">{u.initiative}</td>
@@ -59,5 +60,5 @@ const InitPanel: FC<Props> = ({
       </div>
     </div>
   );
-};
+}
 export default connector(InitPanel);

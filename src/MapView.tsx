@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useCallback, useState } from "react";
 import tinycolor2 from "tinycolor2";
 
+import { columnLabel, deg, en, lerp, XY } from "./tools";
 import BattlePlan, {
   CircleOverlay,
   ColourName,
@@ -12,8 +13,7 @@ import BattlePlan, {
   SquareOverlay,
   Unit,
   Wall,
-} from "./BattlePlan";
-import { columnLabel, deg, en, lerp, XY } from "./tools";
+} from "./types/BattlePlan";
 
 const sizeLookup: { [size: string]: number } = {
   T: 0.3,
@@ -49,22 +49,21 @@ function MapUnit({
   const ssize = scale * size;
   const x = (u.x + Math.max(scale, 0.5)) * size;
   const y = (u.y + Math.max(scale, 0.5)) * size;
-  const click = () => {
+  const click = useCallback(() => {
     if (onClick) onClick(u.x, u.y);
-  };
-  const mouseDown = () => {
+  }, [onClick, u.x, u.y]);
+  const mouseDown = useCallback(() => {
     if (onMouseDown) onMouseDown();
-  };
-  const mouseUp = () => {
+  }, [onMouseDown]);
+  const mouseUp = useCallback(() => {
     if (onMouseUp) onMouseUp();
-  };
+  }, [onMouseUp]);
+
+  const mouseOver = useCallback(() => setHover(true), []);
+  const mouseOut = useCallback(() => setHover(false), []);
 
   return image ? (
-    <g
-      className="unit"
-      onMouseOver={() => setHover(true)}
-      onMouseOut={() => setHover(false)}
-    >
+    <g className="unit" onMouseOver={mouseOver} onMouseOut={mouseOut}>
       <circle cx={x} cy={y} r={ssize} fill={cvalue} />
       <circle
         cx={x}
@@ -79,11 +78,7 @@ function MapUnit({
       />
     </g>
   ) : (
-    <g
-      className="unit"
-      onMouseOver={() => setHover(true)}
-      onMouseOut={() => setHover(false)}
-    >
+    <g className="unit" onMouseOver={mouseOver} onMouseOut={mouseOut}>
       <circle
         cx={x}
         cy={y}
@@ -507,31 +502,44 @@ export function MapView({
   const [source, setSource] = useState<XY>();
   const [target, setTarget] = useState<XY>();
 
-  function add(x: number, y: number) {
-    if (onAdd && drag === undefined) onAdd(x, y);
-  }
+  const add = useCallback(
+    (x: number, y: number) => () => {
+      if (onAdd && drag === undefined) onAdd(x, y);
+    },
+    [drag, onAdd]
+  );
 
-  function select(i: number) {
-    if (onSelect) onSelect(i);
-  }
+  const select = useCallback(
+    (i: number) => () => {
+      if (onSelect) onSelect(i);
+    },
+    [onSelect]
+  );
 
-  function over(x: number, y: number) {
-    setTarget([x, y]);
-  }
+  const over = useCallback(
+    (x: number, y: number) => () => setTarget([x, y]),
+    []
+  );
 
-  function startDrag(i: number) {
-    const u = plan.units[i];
-    setDrag(i);
-    setSource([u.x, u.y]);
-  }
+  const startDrag = useCallback(
+    (i: number) => () => {
+      const u = plan.units[i];
+      setDrag(i);
+      setSource([u.x, u.y]);
+    },
+    [plan.units]
+  );
 
-  function endDrag(x: number, y: number) {
-    if (drag !== undefined && onMove) {
-      onMove(drag, x, y);
-      setDrag(undefined);
-      setSource(undefined);
-    }
-  }
+  const endDrag = useCallback(
+    (x: number, y: number) => () => {
+      if (drag !== undefined && onMove) {
+        onMove(drag, x, y);
+        setDrag(undefined);
+        setSource(undefined);
+      }
+    },
+    [drag, onMove]
+  );
 
   return (
     <svg
@@ -590,9 +598,9 @@ export function MapView({
               y={size * y}
               width={size}
               height={size}
-              onClick={() => add(x, y)}
-              onMouseOver={() => over(x, y)}
-              onMouseUp={() => endDrag(x, y)}
+              onClick={add(x, y)}
+              onMouseOver={over(x, y)}
+              onMouseUp={endDrag(x, y)}
             />
           ))
         )}
@@ -620,9 +628,9 @@ export function MapView({
         {plan.units.map((u, i) => (
           <MapUnit
             key={"u" + i}
-            onClick={() => select(i)}
-            onMouseDown={() => startDrag(i)}
-            onMouseUp={() => endDrag(u.x, u.y)}
+            onClick={select(i)}
+            onMouseDown={startDrag(i)}
+            onMouseUp={endDrag(u.x, u.y)}
             plan={plan}
             selected={selected === i}
             unit={u}

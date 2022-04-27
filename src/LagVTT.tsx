@@ -1,6 +1,5 @@
 import "./LagVTT.css";
 
-import { FC } from "react";
 import { connect, ConnectedProps } from "react-redux";
 
 import InitPanel from "./InitPanel";
@@ -38,7 +37,7 @@ const mapDispatchToProps = {
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const LagVTT: FC<Props> = ({
+function LagVTT({
   addUnit,
   closeAllPanels,
   images,
@@ -49,7 +48,7 @@ const LagVTT: FC<Props> = ({
   plan,
   selected,
   toggleInitPanel,
-}) => {
+}: Props) {
   function onAdd(x: number, y: number) {
     addUnit({ label: "", type: "", x, y, size: "M", initiative: 0 });
     openUnitPanel(plan.units.length);
@@ -93,5 +92,5 @@ const LagVTT: FC<Props> = ({
       <UnitPanel />
     </div>
   );
-};
+}
 export default connector(LagVTT);

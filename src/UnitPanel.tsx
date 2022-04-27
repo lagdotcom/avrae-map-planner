@@ -1,7 +1,6 @@
-import React, { FC, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { connect, ConnectedProps } from "react-redux";
 
-import { Colours, Sizes } from "./BattlePlan";
 import TableEnumInput from "./inputs/TableEnumInput";
 import TableNumberInput from "./inputs/TableNumberInput";
 import TableTextInput from "./inputs/TableTextInput";
@@ -11,12 +10,12 @@ import { saveImage, saveUnit } from "./store/db";
 import { patchUnit } from "./store/plan";
 import { getCurrentUnit, getCurrentUnitIndex } from "./store/selectors";
 import { mod } from "./tools";
+import { ColourName, Colours, Sizes } from "./types/BattlePlan";
+import VTTUnit, { PersistentVTTUnit } from "./types/VTTUnit";
 import useGlobalKeyDown from "./useGlobalKeyDown";
-import VTTUnit, { PersistentVTTUnit } from "./VTTUnit";
 
 function UnitPanel({
   height,
-  i,
   images,
   patch,
   remove,
@@ -27,7 +26,6 @@ function UnitPanel({
   width,
 }: {
   height: number;
-  i: number;
   images: Record<string, string>;
   patch: (u: Partial<VTTUnit>) => void;
   remove: () => void;
@@ -66,10 +64,20 @@ function UnitPanel({
     if (url) saveImg(url);
   }
 
+  const patchInitiative = useCallback(
+    (initiative: number) => patch({ initiative }),
+    [patch]
+  );
+  const patchColour = useCallback(
+    (colour?: ColourName) => patch({ colour }),
+    [patch]
+  );
+  const patchSize = useCallback((size?: string) => patch({ size }), [patch]);
+
   useEffect(() => {
     const label = labelRef.current;
     if (label) label.focus();
-  }, [i, labelRef.current]);
+  }, []);
 
   return (
     <div className="UnitPanel Flyout show">
@@ -84,20 +92,20 @@ function UnitPanel({
           <TableNumberInput
             label="Init."
             value={u.initiative}
-            onChange={(initiative) => patch({ initiative })}
+            onChange={patchInitiative}
           />
           <TableEnumInput
             label="Colour"
             value={u.colour}
             empty="(default)"
             options={Colours}
-            onChange={(colour) => patch({ colour })}
+            onChange={patchColour}
           />
           <TableEnumInput
             label="Size"
             value={u.size}
             options={Sizes}
-            onChange={(size) => patch({ size })}
+            onChange={patchSize}
           />
         </tbody>
       </table>
@@ -122,7 +130,7 @@ const mapDispatchToProps = { patchUnit, removeUnit, saveImage, saveUnit };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
 
-const UnitPanelWrapper: FC<Props> = ({
+function UnitPanelWrapper({
   i,
   images,
   patchUnit,
@@ -132,7 +140,7 @@ const UnitPanelWrapper: FC<Props> = ({
   saveUnit,
   u,
   units,
-}) => {
+}: Props) {
   function patch(patch: Partial<VTTUnit>) {
     if (i !== undefined) patchUnit({ i, patch });
   }
@@ -157,11 +165,10 @@ const UnitPanelWrapper: FC<Props> = ({
       saveImg={saveImg}
       images={images}
       units={units}
-      i={i}
       u={u}
       width={plan.width}
       height={plan.height}
     />
   ) : null;
-};
+}
 export default connector(UnitPanelWrapper);

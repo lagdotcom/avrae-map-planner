@@ -1,6 +1,6 @@
 import { createSelector } from "reselect";
 
-import VTTUnit from "../VTTUnit";
+import VTTUnit from "../types/VTTUnit";
 import { AppState } from "./";
 
 export const getCurrentUnitIndex = (state: AppState): number | undefined =>

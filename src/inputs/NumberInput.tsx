@@ -1,4 +1,8 @@
-import React from "react";
+import { ChangeEvent, useCallback } from "react";
+
+function parse(value: number) {
+  return isNaN(value) ? 0 : value;
+}
 
 export default function NumberInput({
   value,
@@ -7,15 +11,11 @@ export default function NumberInput({
   value: number;
   onChange: (value: number) => void;
 }): JSX.Element {
-  function parse(value: number) {
-    return isNaN(value) ? 0 : value;
-  }
-
-  return (
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => onChange(parse(e.target.valueAsNumber))}
-    />
+  const change = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) =>
+      onChange(parse(e.target.valueAsNumber)),
+    [onChange]
   );
+
+  return <input type="number" value={value} onChange={change} />;
 }

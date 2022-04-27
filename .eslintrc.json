@@ -5,10 +5,14 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:array-func/recommended",
     "plugin:eslint-comments/recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended",
+    "plugin:react-perf/recommended",
+    "plugin:react-redux/recommended",
     "prettier"
   ],
   "parser": "@typescript-eslint/parser",
@@ -21,6 +25,9 @@
     "array-func",
     "eslint-comments",
     "react",
+    "react-hooks",
+    "react-perf",
+    "react-redux",
     "woke"
   ],
   "rules": {

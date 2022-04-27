@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { pload, psave } from "../persistence";
-import VTTUnit, { PersistentVTTUnit } from "../VTTUnit";
+import VTTUnit, { PersistentVTTUnit } from "../types/VTTUnit";
 
 interface DBState {
   images: Record<string, string>;

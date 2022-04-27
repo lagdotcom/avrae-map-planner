@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { mod, XY } from "../tools";
-import VTTPlan from "../VTTPlan";
-import VTTUnit from "../VTTUnit";
+import VTTPlan from "../types/VTTPlan";
+import VTTUnit from "../types/VTTUnit";
 
 const initialState: VTTPlan = {
   name: "name",
@@ -43,8 +43,7 @@ const slice = createSlice({
     },
 
     shiftUnits(state, { payload: [x, y] }: PayloadAction<XY>) {
-      for (let i = 0; i < state.units.length; i++) {
-        const u = state.units[i];
+      for (const u of state.units) {
         u.x = mod(u.x + x, state.width);
         u.y = mod(u.y + y, state.height);
       }

@@ -1,15 +1,14 @@
 import "./MapPlanner.css";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
-import BattlePlan, {
-  Colours,
-  Doors,
-  DoorTypes,
-  Sizes,
-  Unit,
-  Wall,
-} from "./BattlePlan";
 import EnumInput from "./inputs/EnumInput";
 import NumberInput from "./inputs/NumberInput";
 import TableEnumInput from "./inputs/TableEnumInput";
@@ -24,8 +23,20 @@ import {
   getOTFBMUrl,
   mod,
 } from "./tools";
+import BattlePlan, {
+  Colours,
+  Doors,
+  DoorTypes,
+  Sizes,
+  Unit,
+  Wall,
+} from "./types/BattlePlan";
+import usePatch from "./usePatch";
+import useToggle from "./useToggle";
 
 type BattlePlanUpdater = Dispatch<SetStateAction<BattlePlan>>;
+
+const orOne = (v?: number) => v || 1;
 
 function MapSettings({
   plan,
@@ -34,38 +45,40 @@ function MapSettings({
   plan: BattlePlan;
   setPlan: BattlePlanUpdater;
 }) {
+  const patch = usePatch(setPlan);
+
   return (
     <table className="MapSettings">
       <tbody>
         <TableTextInput
           label="Name"
           value={plan.name}
-          onChange={(name) => setPlan({ ...plan, name })}
+          onChange={patch("name")}
         />
         <TableNumberInput
           label="Width"
           value={plan.width}
-          onChange={(width) => setPlan({ ...plan, width: width || 1 })}
+          onChange={patch("width", orOne)}
         />
         <TableNumberInput
           label="Height"
           value={plan.height}
-          onChange={(height) => setPlan({ ...plan, height: height || 1 })}
+          onChange={patch("height", orOne)}
         />
         <TableNumberInput
           label="Zoom"
           value={plan.zoom}
-          onChange={(zoom) => setPlan({ ...plan, zoom: zoom || 1 })}
+          onChange={patch("zoom", orOne)}
         />
         <TableNumberInput
           label="Grid Size"
           value={plan.gridsize || 40}
-          onChange={(gridsize) => setPlan({ ...plan, gridsize: gridsize || 1 })}
+          onChange={patch("gridsize", orOne)}
         />
         <TableTextInput
           label="BG"
           value={plan.bg || ""}
-          onChange={(bg) => setPlan({ ...plan, bg })}
+          onChange={patch("bg")}
         />
       </tbody>
     </table>
@@ -79,23 +92,28 @@ function MapLoads({
   plan: BattlePlan;
   setPlan: BattlePlanUpdater;
 }) {
-  function add() {
-    setPlan({
-      ...plan,
-      loads: plan.loads.concat(""),
-    });
-  }
+  const add = useCallback(
+    () => setPlan((plan) => ({ ...plan, loads: plan.loads.concat("") })),
+    [setPlan]
+  );
 
-  function remove(idx: number) {
-    setPlan({ ...plan, loads: plan.loads.filter((_, i) => i !== idx) });
-  }
+  const change = useCallback(
+    (idx: number) => (url: string) =>
+      setPlan((plan) => ({
+        ...plan,
+        loads: plan.loads.map((old, i) => (i === idx ? url : old)),
+      })),
+    [setPlan]
+  );
 
-  function update(idx: number, url: string) {
-    setPlan({
-      ...plan,
-      loads: plan.loads.map((w, i) => (i === idx ? url : w)),
-    });
-  }
+  const remove = useCallback(
+    (idx: number) => () =>
+      setPlan((plan) => ({
+        ...plan,
+        loads: plan.loads.filter((_, i) => i !== idx),
+      })),
+    [setPlan]
+  );
 
   return (
     <div className="MapLoads">
@@ -110,10 +128,10 @@ function MapLoads({
           {plan.loads.map((url, i) => (
             <tr key={i}>
               <td>
-                <TextInput value={url} onChange={(url) => update(i, url)} />
+                <TextInput value={url} onChange={change(i)} />
               </td>
               <td>
-                <button onClick={() => remove(i)}>-</button>
+                <button onClick={remove(i)}>-</button>
               </td>
             </tr>
           ))}
@@ -132,63 +150,137 @@ function UnitSettings({
   setPlan: BattlePlanUpdater;
   unit: Unit;
 }) {
-  const index = plan.units.indexOf(unit);
+  const index = useMemo(() => plan.units.indexOf(unit), [plan.units, unit]);
 
-  function update(patch: Partial<Unit>) {
-    return setPlan({
-      ...plan,
-      units: plan.units.map((u, i) => (index === i ? { ...u, ...patch } : u)),
-    });
-  }
+  const del = useCallback(
+    () =>
+      setPlan((old) => ({
+        ...old,
+        units: old.units.filter((_, i) => i !== index),
+      })),
+    [index, setPlan]
+  );
 
-  function del() {
-    return setPlan({
-      ...plan,
-      units: plan.units.filter((_, i) => i !== index),
-    });
-  }
+  const patch = useCallback(
+    function patch<T extends keyof Unit>(field: T) {
+      return (value?: Unit[T]) =>
+        setPlan((old) => ({
+          ...old,
+          units: old.units.map((u, i) =>
+            i === index ? { ...u, [field]: value } : u
+          ),
+        }));
+    },
+    [index, setPlan]
+  );
 
   return (
     <div className="UnitSettings">
       <strong>Unit</strong> <button onClick={del}>Delete</button>
       <table>
         <tbody>
-          <TableNumberInput
-            label="X"
-            value={unit.x}
-            onChange={(x) => update({ x })}
-          />
-          <TableNumberInput
-            label="Y"
-            value={unit.y}
-            onChange={(y) => update({ y })}
-          />
+          <TableNumberInput label="X" value={unit.x} onChange={patch("x")} />
+          <TableNumberInput label="Y" value={unit.y} onChange={patch("y")} />
           <TableTextInput
             label="Label"
             value={unit.label}
-            onChange={(label) => update({ label })}
+            onChange={patch("label")}
           />
           <TableTextInput
             label="Type"
             value={unit.type}
-            onChange={(type) => update({ type })}
+            onChange={patch("type")}
           />
           <TableEnumInput
             label="Colour"
             value={unit.colour}
             empty="(default)"
             options={Colours}
-            onChange={(colour) => update({ colour })}
+            onChange={patch("colour")}
           />
           <TableEnumInput
             label="Size"
             value={unit.size}
             options={Sizes}
-            onChange={(size) => update({ size })}
+            onChange={patch("size")}
           />
         </tbody>
       </table>
     </div>
+  );
+}
+
+function MapWallInputs({
+  index,
+  w,
+  setPlan,
+}: {
+  index: number;
+  w: Wall;
+  setPlan: BattlePlanUpdater;
+}) {
+  const getDoorLabel = useCallback(
+    (k: keyof typeof DoorTypes) => DoorTypes[k],
+    []
+  );
+
+  const remove = useCallback(
+    (idx: number) => () =>
+      setPlan((old) => ({
+        ...old,
+        walls: old.walls.filter((_, i) => i !== idx),
+      })),
+    [setPlan]
+  );
+
+  const patch = useCallback(
+    function patch<T extends keyof Wall>(field: T) {
+      return (value?: Wall[T]) =>
+        setPlan((old) => ({
+          ...old,
+          walls: old.walls.map((u, i) =>
+            i === index ? { ...u, [field]: value } : u
+          ),
+        }));
+    },
+    [index, setPlan]
+  );
+
+  return (
+    <tr className="line">
+      <td>
+        <NumberInput value={w.sx} onChange={patch("sx")} />
+      </td>
+      <td>
+        <NumberInput value={w.sy} onChange={patch("sy")} />
+      </td>
+      <td>
+        <NumberInput value={w.ex} onChange={patch("ex")} />
+      </td>
+      <td>
+        <NumberInput value={w.ey} onChange={patch("ey")} />
+      </td>
+      <td>
+        <EnumInput
+          empty="(default)"
+          value={w.colour}
+          options={Colours}
+          onChange={patch("colour")}
+        />
+      </td>
+      <td>
+        <EnumInput
+          empty="wall"
+          value={w.door}
+          options={Doors}
+          label={getDoorLabel}
+          onChange={patch("door")}
+        />
+      </td>
+      <td>
+        <button onClick={remove(index)}>-</button>
+      </td>
+    </tr>
   );
 }
 
@@ -199,23 +291,14 @@ function MapWalls({
   plan: BattlePlan;
   setPlan: BattlePlanUpdater;
 }) {
-  function add() {
-    return setPlan({
-      ...plan,
-      walls: plan.walls.concat({ sx: 0, sy: 0, ex: 0, ey: 0 }),
-    });
-  }
-
-  function remove(idx: number) {
-    return setPlan({ ...plan, walls: plan.walls.filter((_, i) => i !== idx) });
-  }
-
-  function update(idx: number, patch: Partial<Wall>) {
-    return setPlan({
-      ...plan,
-      walls: plan.walls.map((w, i) => (i === idx ? { ...w, ...patch } : w)),
-    });
-  }
+  const add = useCallback(
+    () =>
+      setPlan((old) => ({
+        ...old,
+        walls: old.walls.concat({ sx: 0, sy: 0, ex: 0, ey: 0 }),
+      })),
+    [setPlan]
+  );
 
   return (
     <div className="MapWalls">
@@ -233,52 +316,7 @@ function MapWalls({
         </thead>
         <tbody>
           {plan.walls.map((w, i) => (
-            <tr key={i} className="line">
-              <td>
-                <NumberInput
-                  value={w.sx}
-                  onChange={(sx) => update(i, { sx })}
-                />
-              </td>
-              <td>
-                <NumberInput
-                  value={w.sy}
-                  onChange={(sy) => update(i, { sy })}
-                />
-              </td>
-              <td>
-                <NumberInput
-                  value={w.ex}
-                  onChange={(ex) => update(i, { ex })}
-                />
-              </td>
-              <td>
-                <NumberInput
-                  value={w.ey}
-                  onChange={(ey) => update(i, { ey })}
-                />
-              </td>
-              <td>
-                <EnumInput
-                  empty="(default)"
-                  value={w.colour}
-                  options={Colours}
-                  onChange={(colour) => update(i, { colour })}
-                />
-              </td>
-              <td>
-                <EnumInput
-                  empty="wall"
-                  value={w.door}
-                  options={Doors}
-                  label={(k) => DoorTypes[k]}
-                  onChange={(door) => update(i, { door })}
-                />
-              </td>
-              <td>
-                <button onClick={() => remove(i)}>-</button>
-              </td>
-            </tr>
+            <MapWallInputs key={i} index={i} w={w} setPlan={setPlan} />
           ))}
         </tbody>
       </table>
@@ -295,11 +333,13 @@ function MapDetails({
   selected?: number;
   setPlan: BattlePlanUpdater;
 }) {
+  const test = useCallback(() => window.open(getOTFBMUrl(plan)), [plan]);
+
   const unit = typeof selected === "number" ? plan.units[selected] : undefined;
 
   return (
     <div className="MapDetails">
-      <button onClick={() => window.open(getOTFBMUrl(plan))}>Test</button>
+      <button onClick={test}>Test</button>
       <MapSettings plan={plan} setPlan={setPlan} />
       <MapLoads plan={plan} setPlan={setPlan} />
       {unit && <UnitSettings plan={plan} setPlan={setPlan} unit={unit} />}
@@ -319,13 +359,12 @@ function MapCode({
 }) {
   const lines = uvar ? convertToUvar(plan) : convertToBPlan(plan).join("\n");
 
-  return (
-    <textarea
-      className="MapCode"
-      value={lines}
-      onChange={(e) => onChange(e.target.value)}
-    />
+  const change = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value),
+    [onChange]
   );
+
+  return <textarea className="MapCode" value={lines} onChange={change} />;
 }
 
 export default function MapPlanner(): JSX.Element {
@@ -339,7 +378,7 @@ export default function MapPlanner(): JSX.Element {
     loads: [],
     overlays: [],
   });
-  const [solo, setSolo] = useState<boolean>(false);
+  const [solo, toggleSolo] = useToggle(false);
 
   const [selected, setSelected] = useState<number>();
   function add(x: number, y: number) {
@@ -363,14 +402,22 @@ export default function MapPlanner(): JSX.Element {
     });
   }
 
-  function shift(mx: number, my: number) {
-    function apply(u: Unit) {
-      const { x, y } = u;
-      return { ...u, x: mod(x + mx, plan.width), y: mod(y + my, plan.height) };
-    }
-
-    setPlan({ ...plan, units: plan.units.map(apply) });
-  }
+  const shift = useCallback(
+    (mx: number, my: number) => () => {
+      setPlan({
+        ...plan,
+        units: plan.units.map((u) => {
+          const { x, y } = u;
+          return {
+            ...u,
+            x: mod(x + mx, plan.width),
+            y: mod(y + my, plan.height),
+          };
+        }),
+      });
+    },
+    [plan]
+  );
 
   function parse(s: string) {
     const stripped = s.startsWith("!uvar Battles ") ? s.substr(14) : s;
@@ -388,11 +435,11 @@ export default function MapPlanner(): JSX.Element {
       <MapDetails plan={plan} setPlan={setPlan} selected={selected} />
       <MapCode onChange={parse} plan={plan} uvar={true} />
       <div className="ButtonBox">
-        <button onClick={() => setSolo(!solo)}>Solo</button>
-        <button onClick={() => shift(-1, 0)}>&lt;</button>
-        <button onClick={() => shift(0, -1)}>^</button>
-        <button onClick={() => shift(1, 0)}>&gt;</button>
-        <button onClick={() => shift(0, 1)}>v</button>
+        <button onClick={toggleSolo}>Solo</button>
+        <button onClick={shift(-1, 0)}>&lt;</button>
+        <button onClick={shift(0, -1)}>^</button>
+        <button onClick={shift(1, 0)}>&gt;</button>
+        <button onClick={shift(0, 1)}>v</button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import { ChangeEvent, useCallback } from "react";
 
 export default function EnumInput<T extends string>({
   empty,
@@ -13,13 +13,21 @@ export default function EnumInput<T extends string>({
   options: T[];
   onChange: (value: T | undefined) => void;
 }): JSX.Element {
-  function resolve(val: string) {
-    if (val !== empty) return val as T;
-    return undefined;
-  }
+  const resolve = useCallback(
+    (val: string) => {
+      if (val !== empty) return val as T;
+      return undefined;
+    },
+    [empty]
+  );
+
+  const change = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => onChange(resolve(e.target.value)),
+    [onChange, resolve]
+  );
 
   return (
-    <select value={value} onChange={(e) => onChange(resolve(e.target.value))}>
+    <select value={value} onChange={change}>
       {empty && <option>{empty}</option>}
       {options.map((o) => (
         <option key={o} value={o}>

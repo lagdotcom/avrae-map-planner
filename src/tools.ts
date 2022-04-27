@@ -1,4 +1,9 @@
-import BattlePlan, { ColourName, DoorType, Unit, Wall } from "./BattlePlan";
+import BattlePlan, {
+  ColourName,
+  DoorType,
+  Unit,
+  Wall,
+} from "./types/BattlePlan";
 
 type StringDict = Record<string, string>;
 export type XY = [x: number, y: number];

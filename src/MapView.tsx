@@ -532,11 +532,10 @@ export function MapView({
 
   const endDrag = useCallback(
     (x: number, y: number) => () => {
-      if (drag !== undefined && onMove) {
-        onMove(drag, x, y);
-        setDrag(undefined);
-        setSource(undefined);
-      }
+      if (drag !== undefined && onMove) onMove(drag, x, y);
+
+      setDrag(undefined);
+      setSource(undefined);
     },
     [drag, onMove]
   );

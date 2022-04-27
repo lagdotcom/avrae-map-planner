@@ -1,6 +1,6 @@
-import "./MapPlanner.scss";
+import "./MapPlanner.css";
 
-import React, { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import BattlePlan, {
   Colours,
@@ -25,7 +25,7 @@ import {
   mod,
 } from "./tools";
 
-type BattlePlanUpdater = React.Dispatch<React.SetStateAction<BattlePlan>>;
+type BattlePlanUpdater = Dispatch<SetStateAction<BattlePlan>>;
 
 function MapSettings({
   plan,

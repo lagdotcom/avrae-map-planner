@@ -9,13 +9,7 @@ import { MapView } from "./MapView";
 import { AppState } from "./store";
 import { addUnit, moveUnit } from "./store/plan";
 import { getCurrentUnitIndex } from "./store/selectors";
-import {
-  closeAllPanels,
-  openLoadPanel,
-  openMapPanel,
-  openUnitPanel,
-  toggleInitPanel,
-} from "./store/ui";
+import { closeAllPanels, openUnitPanel } from "./store/ui";
 import { mod } from "./tools";
 import UnitPanel from "./UnitPanel";
 import useGlobalKeyDown from "./useGlobalKeyDown";
@@ -30,10 +24,7 @@ const mapDispatchToProps = {
   addUnit,
   closeAllPanels,
   moveUnit,
-  openLoadPanel,
-  openMapPanel,
   openUnitPanel,
-  toggleInitPanel,
 };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type Props = ConnectedProps<typeof connector>;
@@ -43,12 +34,9 @@ function LagVTT({
   closeAllPanels,
   images,
   moveUnit,
-  openLoadPanel,
-  openMapPanel,
   openUnitPanel,
   plan,
   selected,
-  toggleInitPanel,
 }: Props) {
   function onAdd(x: number, y: number) {
     addUnit({ label: "", type: "", x, y, size: "M", initiative: 0 });

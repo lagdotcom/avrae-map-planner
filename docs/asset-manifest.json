@@ -1,22 +1,15 @@
 {
   "files": {
-    "main.css": "/avrae-map-planner/static/css/main.8b777628.chunk.css",
-    "main.js": "/avrae-map-planner/static/js/main.769b72c4.chunk.js",
-    "main.js.map": "/avrae-map-planner/static/js/main.769b72c4.chunk.js.map",
-    "runtime-main.js": "/avrae-map-planner/static/js/runtime-main.4f7b6a22.js",
-    "runtime-main.js.map": "/avrae-map-planner/static/js/runtime-main.4f7b6a22.js.map",
-    "static/js/2.c54f70c5.chunk.js": "/avrae-map-planner/static/js/2.c54f70c5.chunk.js",
-    "static/js/2.c54f70c5.chunk.js.map": "/avrae-map-planner/static/js/2.c54f70c5.chunk.js.map",
-    "static/js/3.e97df0dd.chunk.js": "/avrae-map-planner/static/js/3.e97df0dd.chunk.js",
-    "static/js/3.e97df0dd.chunk.js.map": "/avrae-map-planner/static/js/3.e97df0dd.chunk.js.map",
+    "main.css": "/avrae-map-planner/static/css/main.75782ee1.css",
+    "main.js": "/avrae-map-planner/static/js/main.a7b2d6f7.js",
+    "static/js/787.ad8e2732.chunk.js": "/avrae-map-planner/static/js/787.ad8e2732.chunk.js",
     "index.html": "/avrae-map-planner/index.html",
-    "static/css/main.8b777628.chunk.css.map": "/avrae-map-planner/static/css/main.8b777628.chunk.css.map",
-    "static/js/2.c54f70c5.chunk.js.LICENSE.txt": "/avrae-map-planner/static/js/2.c54f70c5.chunk.js.LICENSE.txt"
+    "main.75782ee1.css.map": "/avrae-map-planner/static/css/main.75782ee1.css.map",
+    "main.a7b2d6f7.js.map": "/avrae-map-planner/static/js/main.a7b2d6f7.js.map",
+    "787.ad8e2732.chunk.js.map": "/avrae-map-planner/static/js/787.ad8e2732.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.4f7b6a22.js",
-    "static/js/2.c54f70c5.chunk.js",
-    "static/css/main.8b777628.chunk.css",
-    "static/js/main.769b72c4.chunk.js"
+    "static/css/main.75782ee1.css",
+    "static/js/main.a7b2d6f7.js"
   ]
 }

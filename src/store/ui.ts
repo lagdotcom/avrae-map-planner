@@ -33,12 +33,18 @@ const slice = createSlice({
       state.overlayPanel = undefined;
       state.unitPanel = undefined;
     },
+    closeLoadPanel(state) {
+      state.loadPanel = false;
+    },
 
     openMapPanel(state) {
       state.loadPanel = false;
       state.mapPanel = true;
       state.overlayPanel = undefined;
       state.unitPanel = undefined;
+    },
+    closeMapPanel(state) {
+      state.mapPanel = false;
     },
 
     openOverlayPanel(state, { payload }: PayloadAction<number>) {
@@ -67,6 +73,8 @@ const slice = createSlice({
 
 export const {
   closeAllPanels,
+  closeLoadPanel,
+  closeMapPanel,
   openLoadPanel,
   openMapPanel,
   openOverlayPanel,

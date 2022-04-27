@@ -19,6 +19,7 @@ import {
 import { mod } from "./tools";
 import UnitPanel from "./UnitPanel";
 import useGlobalKeyDown from "./useGlobalKeyDown";
+import VTTButtonPanel from "./VTTButtonPanel";
 
 const mapStateToProps = (state: AppState) => ({
   images: state.db.images,
@@ -62,10 +63,6 @@ function LagVTT({
     openUnitPanel(index);
   }
 
-  // TODO: make these not interrupt typing
-  useGlobalKeyDown(() => toggleInitPanel(), ["shift+I"]);
-  useGlobalKeyDown(() => openLoadPanel(), ["shift+L"]);
-  useGlobalKeyDown(() => openMapPanel(), ["shift+M"]);
   useGlobalKeyDown(() => closeAllPanels(), ["Escape"]);
   useGlobalKeyDown(
     () => openUnitPanel(mod((selected ?? 0) + 1, plan.units.length)),
@@ -90,6 +87,7 @@ function LagVTT({
       <LoadPanel />
       <MapPanel />
       <UnitPanel />
+      <VTTButtonPanel />
     </div>
   );
 }
